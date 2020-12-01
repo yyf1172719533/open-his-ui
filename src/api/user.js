@@ -3,7 +3,7 @@ import request from '@/utils/request'
 // 调用后端接口用户登录
 export function login(data) {
   return request({
-    url: '/vue-element-admin/user/login',
+    url: '/login/doLogin',
     method: 'post',
     data
   })
@@ -12,7 +12,7 @@ export function login(data) {
 // 获取用户信息
 export function getInfo(token) {
   return request({
-    url: '/vue-element-admin/user/info',
+    url: '/login/getInfo',
     method: 'get',
     params: { token }
   })
@@ -21,7 +21,15 @@ export function getInfo(token) {
 // 用户退出
 export function logout() {
   return request({
-    url: '/vue-element-admin/user/logout',
+    url: '/login/logout',
     method: 'post'
+  })
+}
+
+// 获取菜单信息
+export function getMenus() {
+  return request({
+    url: '/login/getMenus',
+    method: 'get'
   })
 }

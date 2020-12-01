@@ -27,16 +27,17 @@ router.beforeEach(async(to, from, next) => {
       NProgress.done() // hack: https://github.com/PanJiaChen/vue-element-admin/pull/2939
     } else {
       // 判断用户是否有角色
-      const hasRoles = store.getters.roles && store.getters.roles.length > 0
+      const hasRoles = store.getters.name !== ''
       if (hasRoles) {
         next()
       } else {
         try {
           // 获取用户信息
-          const { roles } = await store.dispatch('user/getInfo')
+          await store.dispatch('user/getInfo')
 
           // 构造动态路由【菜单和权限】
-          const accessRoutes = await store.dispatch('permission/generateRoutes', roles)
+          // const accessRoutes = await store.dispatch('permission/generateRoutes', ['admin'])
+          const accessRoutes = await store.dispatch('menu/getMenus')
 
           // 动态添加路由
           router.addRoutes(accessRoutes)

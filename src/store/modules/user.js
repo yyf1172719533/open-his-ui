@@ -6,7 +6,7 @@ const state = {
   token: getToken(),
   name: '',
   avatar: '',
-  introduction: '',
+  permissions: [],
   roles: []
 }
 
@@ -14,8 +14,8 @@ const mutations = {
   SET_TOKEN: (state, token) => {
     state.token = token
   },
-  SET_INTRODUCTION: (state, introduction) => {
-    state.introduction = introduction
+  SET_PERMISSIONS: (state, permissions) => {
+    state.permissions = permissions
   },
   SET_NAME: (state, name) => {
     state.name = name
@@ -31,12 +31,12 @@ const mutations = {
 const actions = {
   // 用户登录
   login({ commit }, userInfo) {
-    const { username, password } = userInfo
+    const { userName, password } = userInfo
     return new Promise((resolve, reject) => {
-      login({ username: username.trim(), password: password }).then(response => {
-        const { data } = response
-        commit('SET_TOKEN', data.token)
-        setToken(data.token)
+      login({ userName: userName.trim(), password: password }).then(response => {
+        const { token } = response
+        commit('SET_TOKEN', token)
+        setToken(token)
         resolve()
       }).catch(error => {
         reject(error)
@@ -48,26 +48,21 @@ const actions = {
   getInfo({ commit, state }) {
     return new Promise((resolve, reject) => {
       getInfo(state.token).then(response => {
-        const { data } = response
+        const { userName, avatar, roles, permissions } = response
 
-        if (!data) {
-          reject('Verification failed, please Login again.')
-        }
-
-        const { roles, name, avatar } = data
-
-        // roles must be a non-empty array
-        if (!roles || roles.length <= 0) {
-          reject('getInfo: roles must be a non-null array!')
+        if (!userName) {
+          reject('用户未登录,请登录')
         }
 
         // 用户角色
         commit('SET_ROLES', roles)
         // 用户名
-        commit('SET_NAME', name)
+        commit('SET_NAME', userName)
         // 用户头像
         commit('SET_AVATAR', avatar)
-        resolve(data)
+        // 用户权限
+        commit('SET_PERMISSIONS', permissions)
+        resolve(response)
       }).catch(error => {
         reject(error)
       })
@@ -79,12 +74,12 @@ const actions = {
     return new Promise((resolve, reject) => {
       logout(state.token).then(() => {
         commit('SET_TOKEN', '')
+        commit('SET_PERMISSIONS', [])
         commit('SET_ROLES', [])
         removeToken()
+        // 重置路由
         resetRouter()
 
-        // reset visited views and cached views
-        // to fixed https://github.com/PanJiaChen/vue-element-admin/issues/2485
         dispatch('tagsView/delAllViews', null, { root: true })
 
         resolve()
@@ -98,6 +93,7 @@ const actions = {
   resetToken({ commit }) {
     return new Promise(resolve => {
       commit('SET_TOKEN', '')
+      commit('SET_PERMISSIONS', [])
       commit('SET_ROLES', [])
       removeToken()
       resolve()
