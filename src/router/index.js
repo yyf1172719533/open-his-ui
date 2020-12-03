@@ -76,7 +76,7 @@ export const asyncRoutes = [
     children: [
       {
         path: 'dept',
-        component: () => import('@/views/system/dept/index'),
+        component: () => import('@/views/error-page/404'),
         name: '/system/dept',
         meta: {
           title: '科室管理',
@@ -85,7 +85,7 @@ export const asyncRoutes = [
       },
       {
         path: 'user',
-        component: () => import('@/views/system/user/index'),
+        component: () => import('@/views/error-page/404'),
         name: '/system/user',
         meta: {
           title: '用户管理',
@@ -94,7 +94,7 @@ export const asyncRoutes = [
       },
       {
         path: 'role',
-        component: () => import('@/views/system/role/index'),
+        component: () => import('@/views/error-page/404'),
         name: '/system/role',
         meta: {
           title: '角色管理',
@@ -103,7 +103,7 @@ export const asyncRoutes = [
       },
       {
         path: 'menu',
-        component: () => import('@/views/system/menu/index'),
+        component: () => import('@/views/error-page/404'),
         name: '/system/menu',
         meta: {
           title: '菜单管理',
@@ -112,7 +112,7 @@ export const asyncRoutes = [
       },
       {
         path: 'dict',
-        component: () => import('@/views/system/dict/type'),
+        component: () => import('@/views/error-page/404'),
         name: '/system/dict',
         meta: {
           title: '字典管理',
@@ -121,7 +121,7 @@ export const asyncRoutes = [
       },
       {
         path: 'notice',
-        component: () => import('@/views/system/notice/index'),
+        component: () => import('@/views/error-page/404'),
         name: '/system/notice',
         meta: {
           title: '通知公告',
@@ -130,7 +130,7 @@ export const asyncRoutes = [
       },
       {
         path: 'log_login',
-        component: () => import('@/views/system/loginInfo/index'),
+        component: () => import('@/views/error-page/404'),
         name: '/system/log_login',
         meta: {
           title: '登陆日志管理',
@@ -139,7 +139,7 @@ export const asyncRoutes = [
       },
       {
         path: 'log_opt',
-        component: () => import('@/views/system/operLog/index'),
+        component: () => import('@/views/error-page/404'),
         name: '/system/log_opt',
         meta: {
           title: '操作日志管理',
@@ -148,7 +148,7 @@ export const asyncRoutes = [
       },
       {
         path: 'ins_fee',
-        component: () => import('@/views/system/checkItem/index'),
+        component: () => import('@/views/error-page/404'),
         name: '/system/ins_fee',
         meta: {
           title: '检查费用设置',
@@ -157,7 +157,7 @@ export const asyncRoutes = [
       },
       {
         path: 'reg_fee',
-        component: () => import('@/views/system/registeredItem/index'),
+        component: () => import('@/views/error-page/404'),
         name: '/system/reg_fee',
         meta: {
           title: '挂号费用设置',
@@ -380,7 +380,7 @@ export const lastRoute = [
     children: [
       {
         path: 'data/:dictId(\\d+)',
-        component: () => import('@/views/system/dict/data'),
+        component: () => import('@/views/error-page/404'),
         name: '/dict',
         meta: { title: '数据字典' }
       }
