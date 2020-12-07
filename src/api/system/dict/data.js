@@ -36,7 +36,7 @@ export function deleteDictDataByIds(dictCodes) {
 }
 
 // 根据字典编码查询
-export function getDictData(dictCode) {
+export function getDictDataByDictCode(dictCode) {
   return request({
     url: '/system/dict/data/getOne/' + dictCode,
     method: 'get'

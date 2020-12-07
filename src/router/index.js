@@ -379,8 +379,8 @@ export const lastRoute = [
     hidden: true,
     children: [
       {
-        path: 'data/:dictId(\\d+)',
-        component: () => import('@/views/error-page/404'),
+        path: 'data/:dictCode(\\d+)',
+        component: () => import('@/views/system/dict/data'),
         name: '/dict',
         meta: { title: '数据字典' }
       }

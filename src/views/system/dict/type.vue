@@ -73,7 +73,7 @@
     <!-- 数据表格开始 -->
     <el-table v-loading="loading" border :data="dictTypeTableList" @selection-change="handleSelectionChange">
       <el-table-column type="selection" width="55" align="center" />
-      <el-table-column label="字典编号" prop="dictCode" align="center" />
+      <el-table-column label="字典编号" prop="id" align="center" />
       <el-table-column label="字典名称" prop="dictName" align="center" :show-overflow-tooltip="true" />
       <el-table-column label="字典类型" prop="dictType" align="center" :show-overflow-tooltip="true">
         <template slot-scope="scope">
@@ -148,6 +148,7 @@
 <script>
 // 引入api
 import { listForPage, addDictType, updateDictType, getDictTypeById, deleteDictTypeByIds, dictCacheAsync } from '@/api/system/dict/type'
+
 export default {
   // 定义页面数据
   data() {
@@ -197,7 +198,7 @@ export default {
     // 查询表格数据
     this.getDictTypeList()
     // 根据字典类型查询字典数据
-    this.getDictDataByDictType('sys_normal_disable').then(res => {
+    this.getDictDataByType('sys_normal_disable').then(res => {
       this.statusOptions = res.data
     })
   },
@@ -226,7 +227,9 @@ export default {
     },
     // 数据表格多选时触发
     handleSelectionChange(selection) {
-
+      this.ids = selection.map(item => item.id)
+      this.single = selection.length !== 1
+      this.multiple = !selection.length
     },
     // 分页pageSize时触发
     handleSizeChange(val) {
@@ -240,7 +243,7 @@ export default {
     },
     // 状态转换
     statusFormatter(row) {
-
+      return this.selectDictLabel(this.statusOptions, row.status)
     },
     // 打开添加的对话框
     handleAdd() {
@@ -249,16 +252,60 @@ export default {
     },
     // 打开修改的对话框
     handleUpdate(row) {
+      const dictId = row.id || this.ids
       this.open = true
       this.reset()
+      // 根据字典编码查询一个字典信息
+      getDictTypeById(dictId).then(res => {
+        this.form = res.data
+      })
     },
     // 删除
     handleDelete(row) {
-
+      const dictIds = row.id || this.ids
+      this.$confirm('此操作将永久删除字典数据, 是否继续?', '提示', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning'
+      }).then(() => {
+        this.loading = true
+        deleteDictTypeByIds(dictIds).then(res => {
+          this.loading = false
+          this.msgSuccess('删除成功')
+          this.getDictTypeList()
+        })
+      }).catch(() => {
+        this.loading = false
+      })
     },
     // 保存
     handleSubmit() {
-
+      this.$refs['form'].validate((valid) => {
+        if (valid) {
+          this.loading = true
+          if (this.form.id === undefined) {
+            // 添加字典信息
+            addDictType(this.form).then(res => {
+              this.msgSuccess('添加成功')
+              this.loading = false
+              this.getDictTypeList()
+              this.open = false
+            }).catch(() => {
+              this.loading = false
+            })
+          } else {
+            // 修改字典信息
+            updateDictType(this.form).then(res => {
+              this.msgSuccess('修改成功')
+              this.loading = false
+              this.getDictTypeList()
+              this.open = false
+            }).catch(() => {
+              this.loading = false
+            })
+          }
+        }
+      })
     },
     // 取消
     cancel() {
@@ -267,7 +314,7 @@ export default {
     // 重置表单
     reset() {
       this.form = {
-        dictCode: undefined,
+        id: undefined,
         dictName: undefined,
         dictType: undefined,
         status: '0',
@@ -287,7 +334,3 @@ export default {
 
 }
 </script>
-
-<style scoped>
-
-</style>
