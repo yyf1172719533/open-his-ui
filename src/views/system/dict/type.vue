@@ -77,7 +77,7 @@
       <el-table-column label="字典名称" prop="dictName" align="center" :show-overflow-tooltip="true" />
       <el-table-column label="字典类型" prop="dictType" align="center" :show-overflow-tooltip="true">
         <template slot-scope="scope">
-          <router-link :to="'/dict/data/' + scope.row.dictCode" class="link-type">
+          <router-link :to="'/dict/data/' + scope.row.id" class="link-type">
             <span>{{ scope.row.dictType }}</span>
           </router-link>
         </template>
@@ -172,7 +172,7 @@ export default {
       // 状态数据字典
       statusOptions: [],
       // 日期范围
-      dataRange: [],
+      dateRange: [],
       // 查询参数
       queryParams: {
         pageNum: 1,
@@ -184,7 +184,7 @@ export default {
       // 表单数据
       form: {},
       // 表单校验
-      roles: {
+      rules: {
         dictName: [
           { required: true, message: '字典名称不能为空', trigger: 'blur' }
         ],
@@ -208,7 +208,7 @@ export default {
     getDictTypeList() {
       // 打开遮罩层
       this.loading = true
-      listForPage(this.addDateRange(this.queryParams, this.dataRange)).then(res => {
+      listForPage(this.addDateRange(this.queryParams, this.dateRange)).then(res => {
         this.dictTypeTableList = res.data
         this.total = res.total
         // 关闭遮罩层
@@ -222,7 +222,7 @@ export default {
     // 重置条件查询
     resetQuery() {
       this.resetForm('queryForm')
-      this.dataRange = []
+      this.dateRange = []
       this.getDictTypeList()
     },
     // 数据表格多选时触发

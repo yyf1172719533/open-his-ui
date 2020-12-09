@@ -139,7 +139,7 @@ export const asyncRoutes = [
       },
       {
         path: 'log_opt',
-        component: () => import('@/views/error-page/404'),
+        component: () => import('@/views/system/operLog/index'),
         name: '/system/log_opt',
         meta: {
           title: '操作日志管理',
@@ -379,7 +379,7 @@ export const lastRoute = [
     hidden: true,
     children: [
       {
-        path: 'data/:dictCode(\\d+)',
+        path: 'data/:id',
         component: () => import('@/views/system/dict/data'),
         name: '/dict',
         meta: { title: '数据字典' }

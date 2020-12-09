@@ -180,7 +180,7 @@ export default {
       // 表单数据
       form: {},
       // 表单校验
-      roles: {
+      rules: {
         dictLabel: [
           { required: true, message: '字典标签不能为空', trigger: 'blur' }
         ],
@@ -259,6 +259,7 @@ export default {
         dictSort: 0,
         remark: undefined
       }
+      this.resetForm('form')
     },
     // 打开添加的对话框
     handleAdd() {

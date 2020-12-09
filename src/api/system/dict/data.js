@@ -46,7 +46,7 @@ export function getDictDataByDictCode(dictCode) {
 // 根据字典类型查询
 export function getDictDataByType(dictType) {
   return request({
-    url: '/system/dict/data/getDictDataByType/' + dictType,
+    url: '/system/dict/data/getDataByType/' + dictType,
     method: 'get'
   })
 }
