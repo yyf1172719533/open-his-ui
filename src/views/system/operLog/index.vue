@@ -27,7 +27,7 @@
           style="width:240px"
         >
           <el-option
-            v-for="dict in statusOptions"
+            v-for="dict in businessTypeOptions"
             :key="dict.dictValue"
             :label="dict.dictLabel"
             :value="dict.dictValue"
@@ -79,25 +79,213 @@
       </el-col>
     </el-row>
     <!-- 表格工具按钮结束 -->
+
+    <!-- 数据表格开始 -->
+    <el-table v-loading="loading" border :data="operLogTableList" @selection-change="handleSelectionChange">
+      <el-table-column type="selection" width="55" align="center" />
+      <el-table-column type="expand">
+        <template slot-scope="props">
+          <el-form label-position="left" inline class="demo-table-expand">
+            <el-form-item label="操作模块:">
+              <span>{{ props.row.title }}</span>
+            </el-form-item>
+            <el-form-item label="登录信息:">
+              <span>{{ props.row.operName }} // {{ props.row.operIp }} // {{ props.row.operLocation }}</span>
+            </el-form-item>
+            <el-form-item label="请求地址:">
+              <span>{{ props.row.operUrl }}</span>
+            </el-form-item>
+            <el-form-item label="操作方法:">
+              <span>{{ props.row.requestMethod }}</span>
+            </el-form-item>
+            <el-form-item label="请求参数:">
+              <span>{{ props.row.operParam }}</span>
+            </el-form-item>
+            <el-form-item label="返回参数:">
+              <span>{{ props.row.operResultParam }}</span>
+            </el-form-item>
+            <el-form-item label="操作状态:">
+              <span>{{ props.row.status==0 ? '成功' : '失败' }}</span>
+            </el-form-item>
+            <el-form-item label="操作时间:">
+              <span>{{ props.row.createTime }}</span>
+            </el-form-item>
+            <el-form-item label="异常信息:">
+              <span>{{ props.row.errorMsg }}</span>
+            </el-form-item>
+          </el-form>
+        </template>
+      </el-table-column>
+      <el-table-column label="ID" align="center" width="300" prop="id" />
+      <el-table-column label="系统模块" align="center" prop="title" />
+      <el-table-column label="操作类型" align="center" prop="businessType" :formatter="businessTypeFormatter" />
+      <el-table-column label="请求方式" width="180" align="center" prop="requestMethod" />
+      <el-table-column label="操作人员" align="center" prop="operName" />
+      <el-table-column label="主机" align="center" prop="operIp" />
+      <el-table-column label="操作地点" align="center" prop="operLocation" />
+      <el-table-column label="操作状态" prop="status" align="center" :formatter="statusFormatter" />
+      <el-table-column label="操作时间" align="center" prop="createTime" width="200" />
+      <el-table-column label="操作" align="center" width="100">
+        <template slot-scope="scope">
+          <el-button type="text" icon="el-icon-delete" size="mini" @click="handleDelete(scope.row)">删除</el-button>
+        </template>
+      </el-table-column>
+    </el-table>
+    <!-- 数据表格结束 -->
+
+    <!-- 分页控件开始 -->
+    <el-pagination
+      v-show="total>0"
+      :current-page="queryParams.pageNum"
+      :page-sizes="[5,10,20,30]"
+      :page-size="queryParams.pageSize"
+      layout="total,sizes,prev,pager,next,jumper"
+      :total="total"
+      @size-change="handleSizeChange"
+      @current-change="handleCurrentChange"
+    />
+    <!-- 分页控件结束 -->
   </div>
 </template>
 
 <script>
+import { listForPage, deleteOperLogByIds, clearAllOperLog } from '@/api/system/operLog'
+
 export default {
   data() {
     return {
-
+      // 遮罩层
+      loading: false,
+      // 选中多条
+      multiple: true,
+      // 选中数组
+      ids: [],
+      // 总条数
+      total: 0,
+      // 操作日志表格数据
+      operLogTableList: [],
+      // 状态数据字典
+      statusOptions: [],
+      // 业务类型
+      businessTypeOptions: [],
+      // 时间
+      dateRange: [],
+      // 查询参数
+      queryParams: {
+        pageNum: 1,
+        pageSize: 10,
+        title: undefined,
+        operName: undefined,
+        businessType: undefined,
+        status: undefined
+      }
     }
   },
   created() {
-
+    // 条件查询中的状态
+    this.getDictDataByType('sys_common_status').then(res => {
+      this.statusOptions = res.data
+    })
+    // 条件查询中的操作类型
+    this.getDictDataByType('sys_oper_type').then(res => {
+      this.businessTypeOptions = res.data
+    })
+    // 查询
+    this.getOperLogList()
   },
   methods: {
-
+    // 查询操作日志信息
+    getOperLogList() {
+      this.loading = true
+      listForPage(this.addDateRange(this.queryParams, this.dateRange)).then(res => {
+        this.operLogTableList = res.data
+        this.total = res.total
+        this.loading = false
+      })
+    },
+    // 条件查询
+    handleQuery() {
+      this.getOperLogList()
+    },
+    // 重置条件查询
+    resetQuery() {
+      this.resetForm('queryForm')
+      this.dateRange = []
+      this.getOperLogList()
+    },
+    // 数据表格多选择框选择时触发
+    handleSelectionChange(selection) {
+      this.ids = selection.map(item => item.id)
+      this.multiple = !selection.length
+    },
+    // 分页pageSize时触发
+    handleSizeChange(val) {
+      this.queryParams.pageSize = val
+      this.getOperLogList()
+    },
+    // 点击上一页 下一页 跳转页时触发
+    handleCurrentChange(val) {
+      this.queryParams.pageNum = val
+      this.getOperLogList()
+    },
+    // 状态转换
+    statusFormatter(row) {
+      return this.selectDictLabel(this.statusOptions, row.status)
+    },
+    // 操作类型转换
+    businessTypeFormatter(row) {
+      return this.selectDictLabel(this.businessTypeOptions, row.businessType)
+    },
+    // 删除
+    handleDelete(row) {
+      const ids = row.id || this.ids
+      this.$confirm('此操作将永久删除操作日志信息, 是否继续?', '提示', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning'
+      }).then(() => {
+        this.loading = true
+        deleteOperLogByIds(ids).then(res => {
+          this.loading = false
+          this.msgSuccess('删除成功')
+          this.getOperLogList()// 全查询
+        })
+      }).catch(() => {
+        this.loading = false
+      })
+    },
+    // 清空
+    handleClearInfo() {
+      this.$confirm('此操作将永久清空操作日志信息, 是否继续?', '提示', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning'
+      }).then(() => {
+        this.loading = true
+        clearAllOperLog().then(res => {
+          this.loading = false
+          this.msgSuccess('清空成功')
+          this.getOperLogList()// 全查询
+        })
+      }).catch(() => {
+        this.loading = false
+      })
+    }
   }
 }
 </script>
 
 <style scoped>
-
+  .demo-table-expand {
+    font-size: 0;
+  }
+  .demo-table-expand label {
+    width: 90px;
+    color: #99a9bf;
+  }
+  .demo-table-expand .el-form-item {
+    margin-right: 0;
+    margin-bottom: 0;
+    width: 50%;
+  }
 </style>
