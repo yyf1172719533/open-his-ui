@@ -21,6 +21,6 @@ export function deleteLoginInfoByIds(ids) {
 export function clearLoginInfo() {
   return request({
     url: '/system/loginInfo/clearLoginInfo',
-    method: 'get'
+    method: 'delete'
   })
 }
