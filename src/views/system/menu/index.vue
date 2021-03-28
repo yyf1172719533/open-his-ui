@@ -205,8 +205,7 @@ export default {
       // 打开遮罩层
       this.loading = true
       listAllMenus(this.queryParams).then(res => {
-        // this.menuTableList = this.handleTree(res.data, 'id')
-        this.menuTableList = res.data
+        this.menuTableList = this.handleTree(res.data, 'id')
         this.loading = false
       })
     },
@@ -222,6 +221,19 @@ export default {
     // 状态转换
     statusFormatter(row) {
       return this.selectDictLabel(this.statusOptions, row.status)
+    },
+    // 重置
+    reset() {
+      this.form = {
+        id: undefined,
+        parentId: 0,
+        menuName: undefined,
+        url: undefined,
+        perCode: undefined,
+        menuType: 'M',
+        remark: undefined,
+        status: '0'
+      }
     },
     // 新增
     handleAdd(row) {
@@ -268,6 +280,7 @@ export default {
         this.loading = false
       })
     },
+    // 提交
     handleSubmit() {
       this.$refs['form'].validate((valid) => {
         if (valid) {
@@ -276,6 +289,16 @@ export default {
           if (this.form.id === undefined) {
             addMenu(this.form).then(res => {
               this.msgSuccess('保存成功')
+              this.open = false
+              this.loading = false
+              this.getMenuList()
+            }).catch(() => {
+              this.loading = false
+            })
+          } else {
+            // 修改
+            updateMenu(this.form).then(res => {
+              this.msgSuccess('修改成功')
               this.loading = false
               this.getMenuList()
               this.open = false
@@ -283,16 +306,6 @@ export default {
               this.loading = false
             })
           }
-        } else {
-          // 修改
-          updateMenu(this.form).then(res => {
-            this.msgSuccess('修改成功')
-            this.loading = false
-            this.getMenuList()
-            this.open = false
-          }).catch(() => {
-            this.loading = false
-          })
         }
       })
     },
@@ -300,37 +313,26 @@ export default {
     cancel() {
       this.open = false
     },
-    // 重置
-    reset() {
-      this.form = {
-        id: undefined,
-        parentId: '0',
-        menuName: undefined,
-        url: undefined,
-        perCode: undefined,
-        menuType: 'M',
-        remark: undefined,
-        status: '0'
-      }
-    },
     // 查询菜单下拉树数据
     getTreeSelect() {
       selectMenuTree().then(res => {
         this.menuOptions = []
-        const menu = { id: '0', menuName: '主类目', children: [] }
+        const menu = { id: 0, menuName: '主类目', children: [] }
         menu.children = this.handleTree(res.data, 'id')
+        console.log(menu)
         this.menuOptions.push(menu)
       })
     },
     // 自定义键名
     normalizer(node) {
-      if (node.childern && !node.childern.length) {
-        delete node.childern
+      // 去掉children=[]的children属性
+      if (node.children && !node.children.length) {
+        delete node.children
       }
       return {
         id: node.id,
         label: node.menuName,
-        children: node.childern
+        children: node.children
       }
     }
   }

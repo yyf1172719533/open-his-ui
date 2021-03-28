@@ -38,14 +38,12 @@ export function handleTree(data, id, parentId, children, rootId) {
 
   // 对菜单数据进行深度克隆
   const cloneData = JSON.parse(JSON.stringify(data))
-  console.log(cloneData)
   // 循环所有数据
   const treeData = cloneData.filter(father => {
     const branchArr = cloneData.filter(child => {
       return father[id] === child[parentId]
     })
     branchArr.length > 0 ? father.children = branchArr : ''
-    console.log(branchArr)
     // 返回上一层
     return father[parentId] === rootId
   })

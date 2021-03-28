@@ -51,3 +51,11 @@ export function deleteMenuById(id) {
   })
 }
 
+// 根据角色ID查询当前角色拥有的菜单权限
+export function getMenuIdsByRoleId(roleId) {
+  return request({
+    url: '/system/menu/getMenuIdsByRoleId/' + roleId,
+    method: 'get'
+  })
+}
+
