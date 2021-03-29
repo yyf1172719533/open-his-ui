@@ -85,7 +85,7 @@ export const asyncRoutes = [
       },
       {
         path: 'user',
-        component: () => import('@/views/error-page/404'),
+        component: () => import('@/views/system/user/index'),
         name: '/system/user',
         meta: {
           title: '用户管理',
