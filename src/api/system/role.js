@@ -54,3 +54,19 @@ export function saveRoleMenu(roleId, menuIds) {
     method: 'post'
   })
 }
+
+// 查询所有可用的角色信息
+export function selectAllRole() {
+  return request({
+    url: '/system/role/selectAllRole',
+    method: 'get'
+  })
+}
+
+// 根据用户ID查询角色ID集合
+export function getRoleIdsByUserId(userId) {
+  return request({
+    url: '/system/role/getRoleIdsByUserId/' + userId,
+    method: 'get'
+  })
+}

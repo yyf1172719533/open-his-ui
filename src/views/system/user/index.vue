@@ -324,6 +324,35 @@
       </span>
     </el-dialog>
     <!-- 添加修改对话框结束 -->
+
+    <!-- 分配角色对话框开始 -->
+    <el-dialog
+      :title="title"
+      :visible.sync="selectRoleOpen"
+      width="900px"
+      center
+      append-to-body
+    >
+      <el-table
+        ref="roleListTable"
+        v-loading="loading"
+        border
+        :data="roleTableList"
+        @selection-change="handleRoleTableSelectionChange"
+      >
+        <el-table-column type="selection" width="55" align="center" />
+        <el-table-column label="角色ID" align="center" prop="id" />
+        <el-table-column label="角色名称" align="center" prop="roleName" />
+        <el-table-column label="权限编码" align="center" prop="roleCode" />
+        <el-table-column label="备注" align="center" prop="remark" />
+        <el-table-column label="创建时间" align="center" prop="createTime" />
+      </el-table>
+      <span slot="footer" class="dialog-footer">
+        <el-button type="primary" @click="handleSubmitRoleSelect">确 定</el-button>
+        <el-button @click="cancelRoleSelect">取 消</el-button>
+      </span>
+    </el-dialog>
+    <!-- 分配角色对话框结束 -->
   </div>
 </template>
 
@@ -331,6 +360,8 @@
 import { listForPage, addUser, updateUser, getUserById, resetPwd, saveUserRole, deleteUserByIds } from '@/api/system/user'
 
 import { selectAllDept } from '@/api/system/dept'
+
+import { selectAllRole, getRoleIdsByUserId } from '@/api/system/role'
 
 export default {
   data() {
@@ -383,6 +414,12 @@ export default {
       knowledgeOptions: [],
       // 是否参与排班数据
       schedulingFlagOptions: [],
+      // 选择角色ID
+      roleIds: [],
+      // 角色列表
+      roleTableList: [],
+      // 当前选中用户
+      currentUserId: undefined,
       // 查询参数
       queryParams: {
         pageNum: 1,
@@ -546,9 +583,47 @@ export default {
         this.loading = false
       })
     },
-    // 分配角色
+    // 打开分配角色对话框
     handleSelectRole(row) {
-      // TODO
+      this.currentUserId = row.id || this.ids[0]
+      this.title = '分配角色权限'
+      this.selectRoleOpen = true
+      const m = this
+      selectAllRole().then(res => {
+        m.roleTableList = res.data
+        this.$nextTick(() => {
+          // 根据当前选中用户查询拥有的角色信息
+          getRoleIdsByUserId(m.currentUserId).then(res => {
+            res.data.filter(r1 => {
+              m.roleTableList.filter(r2 => {
+                if (r1 === r2.id) {
+                  // 选中表格
+                  m.$refs.roleListTable.toggleRowSelection(r2, true)
+                }
+              })
+            })
+          })
+        })
+      })
+    },
+    // 关闭分配角色对话框
+    cancelRoleSelect() {
+      this.selectRoleOpen = false
+      this.title = ''
+    },
+    // 角色表格多选择框选择时触发
+    handleRoleTableSelectionChange(selection) {
+      this.roleIds = selection.map(item => item.id)
+    },
+    // 保存用户和角色之间的关系
+    handleSubmitRoleSelect() {
+      saveUserRole(this.currentUserId, this.roleIds).then(res => {
+        this.selectRoleOpen = false
+        this.msgSuccess('分配成功')
+      }).catch(() => {
+        this.selectRoleOpen = false
+        this.msgSuccess('分配失败')
+      })
     },
     // 提交
     handleSubmit() {
@@ -558,9 +633,9 @@ export default {
           this.loading = true
           if (this.form.id === undefined) {
             addUser(this.form).then(res => {
-              this.msgSuccess('添加成功')
               this.open = false
               this.loading = false
+              this.msgSuccess('添加成功')
               this.getUserList()
             }).catch(() => {
               this.loading = false
@@ -568,10 +643,10 @@ export default {
           } else {
             // 修改
             updateUser(this.form).then(res => {
-              this.msgSuccess('修改成功')
               this.loading = false
-              this.getUserList()
               this.open = false
+              this.msgSuccess('修改成功')
+              this.getUserList()
             }).catch(() => {
               this.loading = false
             })
