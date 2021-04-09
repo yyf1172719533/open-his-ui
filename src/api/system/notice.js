@@ -1,4 +1,4 @@
-import request from "@/utils/request";
+import request from '@/utils/request'
 
 // 条件分页查询公告列表
 export function listNoticeForPage(query) {
@@ -14,16 +14,19 @@ export function addNotice(data) {
   return request({
     url: '/system/notice/addNotice',
     method: 'post',
-    params: data
+    data: data
   })
 }
 
 // 修改公告
 export function updateNotice(data) {
   return request({
+    headers: {
+      'Content-Type': 'application/x-www-form-urlencoded'
+    },
     url: '/system/notice/updateNotice',
     method: 'put',
-    params: data
+    data: data
   })
 }
 
