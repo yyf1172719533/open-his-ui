@@ -14,19 +14,16 @@ export function addNotice(data) {
   return request({
     url: '/system/notice/addNotice',
     method: 'post',
-    data: data
+    params: data
   })
 }
 
 // 修改公告
 export function updateNotice(data) {
   return request({
-    headers: {
-      'Content-Type': 'application/x-www-form-urlencoded'
-    },
     url: '/system/notice/updateNotice',
     method: 'put',
-    data: data
+    params: data
   })
 }
 

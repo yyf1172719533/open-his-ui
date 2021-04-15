@@ -1,11 +1,11 @@
 <template>
   <div class="app-container">
     <!-- 查询条件开始 -->
-    <el-form ref="queryForm" :model="queryParams" :inline="true" label-width="68px">
-      <el-form-item label="科室名称" prop="deptName">
+    <el-form ref="queryForm" :model="queryParams" :inline="true" label-width="98px">
+      <el-form-item label="挂号项目名称" prop="regItemName">
         <el-input
-          v-model="queryParams.deptName"
-          placeholder="请输入科室名称"
+          v-model="queryParams.regItemName"
+          placeholder="请输入挂号项目名称"
           clearable
           size="small"
           style="width:200px"
@@ -52,27 +52,25 @@
         <el-button type="primary" icon="el-icon-plus" size="mini" @click="handleAdd">新增</el-button>
       </el-col>
       <el-col :span="1.5">
-        <el-button type="success" icon="el-icon-edit" size="mini" :disabled="single" @click="handleUpdate">修改</el-button>
+        <el-button type="success" icon="el-icon-edit" size="mini" :disabled="single" @click="handleUpdate">修改
+        </el-button>
       </el-col>
       <el-col :span="1.5">
-        <el-button type="danger" icon="el-icon-delete" size="mini" :disabled="multiple" @click="handleDelete">删除</el-button>
+        <el-button type="danger" icon="el-icon-delete" size="mini" :disabled="multiple" @click="handleDelete">删除
+        </el-button>
       </el-col>
     </el-row>
     <!-- 表格工具按钮结束 -->
 
     <!-- 数据表格开始 -->
-    <el-table v-loading="loading" border :data="deptTableList" @selection-change="handleSelectionChange">
+    <el-table v-loading="loading" border :data="regItemTableList" @selection-change="handleSelectionChange">
       <el-table-column type="selection" width="55" align="center" />
-      <el-table-column label="ID" prop="id" align="center" />
-      <el-table-column label="科室名称" prop="deptName" align="center" />
-      <el-table-column label="科室编号" prop="deptNumber" align="center" />
-      <el-table-column label="当前挂号编号" prop="regNumber" align="center" />
-      <el-table-column label="排序码" prop="orderNum" align="center" />
-      <el-table-column label="负责人" prop="deptLeader" align="center" />
-      <el-table-column label="联系电话" prop="leaderPhone" align="center" />
+      <el-table-column label="ID" align="center" prop="id" />
+      <el-table-column label="挂号项目名称" align="center" prop="regItemName" />
+      <el-table-column label="挂号费用" align="center" prop="regItemFee" />
       <el-table-column label="状态" prop="status" align="center" :formatter="statusFormatter" />
-      <el-table-column label="创建时间" prop="createTime" align="center" width="180" />
-      <el-table-column label="操作" align="center">
+      <el-table-column label="创建时间" align="center" prop="createTime" width="200" />
+      <el-table-column label="操作" align="center" width="250">
         <template slot-scope="scope">
           <el-button type="text" icon="el-icon-edit" size="mini" @click="handleUpdate(scope.row)">修改</el-button>
           <el-button type="text" icon="el-icon-delete" size="mini" @click="handleDelete(scope.row)">删除</el-button>
@@ -81,18 +79,18 @@
     </el-table>
     <!-- 数据表格结束 -->
 
-    <!-- 分页组件开始 -->
+    <!-- 分页控件开始 -->
     <el-pagination
       v-show="total>0"
       :current-page="queryParams.pageNum"
-      :page-sizes="[5, 10, 20, 30]"
+      :page-sizes="[5,10,20,30]"
       :page-size="queryParams.pageSize"
-      layout="total, sizes, prev, pager, next, jumper"
+      layout="total,sizes,prev,pager,next,jumper"
       :total="total"
       @size-change="handleSizeChange"
       @current-change="handleCurrentChange"
     />
-    <!-- 分页组件结束 -->
+    <!-- 分页控件结束 -->
 
     <!-- 添加修改对话框开始 -->
     <el-dialog
@@ -103,23 +101,11 @@
       append-to-body
     >
       <el-form ref="form" :model="form" :rules="rules" label-width="100px">
-        <el-form-item label="科室名称" prop="deptName">
-          <el-input v-model="form.deptName" placeholder="请输入科室名称" clearable size="small" />
+        <el-form-item label="项目名称" prop="regItemName">
+          <el-input v-model="form.regItemName" placeholder="请输入项目名称" clearable size="small" />
         </el-form-item>
-        <el-form-item label="科室编号" prop="deptNumber">
-          <el-input v-model="form.deptNumber" placeholder="请输入科室编号" clearable size="small" />
-        </el-form-item>
-        <el-form-item label="当前挂号编号" prop="regNumber">
-          <el-input-number v-model="form.regNumber" placeholder="请输入当前挂号编号" clearable size="small" />
-        </el-form-item>
-        <el-form-item label="负责人" prop="deptLeader">
-          <el-input v-model="form.deptLeader" placeholder="请输入负责人" clearable size="small" />
-        </el-form-item>
-        <el-form-item label="联系电话" prop="leaderPhone">
-          <el-input v-model="form.leaderPhone" placeholder="请输入联系电话" clearable size="small" />
-        </el-form-item>
-        <el-form-item label="显示顺序" prop="orderNum">
-          <el-input-number v-model="form.orderNum" placeholder="请输入显示顺序" clearable size="small" />
+        <el-form-item label="项目费用" prop="regItemFee">
+          <el-input-number v-model="form.regItemFee" placeholder="请输入项目费用" clearable size="small" />
         </el-form-item>
         <el-form-item label="状态" prop="status">
           <el-radio-group v-model="form.status">
@@ -128,7 +114,8 @@
               :key="dict.dictValue"
               :label="dict.dictValue"
               :value="dict.dictValue"
-            >{{ dict.dictLabel }}</el-radio>
+            >{{ dict.dictLabel }}
+            </el-radio>
           </el-radio-group>
         </el-form-item>
       </el-form>
@@ -142,12 +129,12 @@
 </template>
 
 <script>
-import { listForPage, addDept, updateDept, getDeptById, deleteDeptByIds } from '@/api/system/dept'
+import { listForPage, addRegisteredItem, updateRegisteredItem, getRegisteredItemById, deleteRegisteredItemByIds } from '@/api/system/regItem'
 
 export default {
   data() {
     return {
-      // 是否启用遮罩层
+      // 是否打开遮罩层
       loading: false,
       // 选中数组
       ids: [],
@@ -157,8 +144,8 @@ export default {
       multiple: true,
       // 分页数据总条数
       total: 0,
-      // 表格字典数据
-      deptTableList: [],
+      // 表格公告数据
+      regItemTableList: [],
       // 对话框标题
       title: '',
       // 是否显示对话框
@@ -171,48 +158,49 @@ export default {
       queryParams: {
         pageNum: 1,
         pageSize: 10,
-        deptName: undefined,
+        regItemName: undefined,
         status: undefined
       },
       // 表单数据
       form: {},
       // 表单校验
       rules: {
-        deptName: [
-          { required: true, message: '科室名称不能为空', trigger: 'blur' }
+        regItemName: [
+          { required: true, message: '挂号项目名称不能为空', trigger: 'blur' }
         ],
-        deptNumber: [
-          { required: true, message: '科室编号不能为空', trigger: 'blur' }
+        regItemFee: [
+          { required: true, message: '挂号费用不能为空', trigger: 'blur' }
         ]
       }
     }
   },
   created() {
-    this.getDeptList()
+    this.getRegItemList()
+    // 加载状态
     this.getDictDataByType('sys_normal_disable').then(res => {
       this.statusOptions = res.data
     })
   },
   methods: {
     // 查询表格数据
-    getDeptList() {
+    getRegItemList() {
       // 打开遮罩层
       this.loading = true
       listForPage(this.addDateRange(this.queryParams, this.dateRange)).then(res => {
-        this.deptTableList = res.data
+        this.regItemTableList = res.data
         this.total = res.total
         this.loading = false
       })
     },
     // 条件查询
     handleQuery() {
-      this.getDeptList()
+      this.getRegItemList()
     },
     // 重置查询
     resetQuery() {
       this.resetForm('queryForm')
       this.dateRange = []
-      this.getDeptList()
+      this.getRegItemList()
     },
     // 数据表格多选时触发
     handleSelectionChange(selection) {
@@ -223,12 +211,12 @@ export default {
     // 分页pageSize时触发
     handleSizeChange(val) {
       this.queryParams.pageSize = val
-      this.getDeptList()
+      this.getRegItemList()
     },
     // 上一页 下一页 跳转页数时触发
     handleCurrentChange(val) {
       this.queryParams.pageNum = val
-      this.getDeptList()
+      this.getRegItemList()
     },
     // 状态转换
     statusFormatter(row) {
@@ -238,56 +226,58 @@ export default {
     handleAdd() {
       this.open = true
       this.reset()
+      this.title = '添加挂号项目'
     },
     // 打开修改的对话框
     handleUpdate(row) {
-      const deptId = row.id || this.ids
+      const regItemId = row.id || this.ids
       this.open = true
       this.reset()
-      getDeptById(deptId).then(res => {
+      this.title = '修改挂号项目'
+      getRegisteredItemById(regItemId).then(res => {
         this.form = res.data
       })
     },
     // 删除
     handleDelete(row) {
-      const deptIds = row.id || this.ids
-      this.$confirm('此操作将永久删除科室数据,是否继续?', '提示', {
+      const regItemIds = row.id || this.ids
+      this.$confirm('此操作将永久删除挂号项目数据,是否继续?', '提示', {
         confirmButtonText: '确定',
         cancelButtonText: '取消',
         type: 'warning'
       }).then(() => {
         this.loading = true
-        deleteDeptByIds(deptIds).then(res => {
+        deleteRegisteredItemByIds(regItemIds).then(res => {
           this.loading = false
           this.msgSuccess('删除成功')
-          this.getDeptList()
+          this.getRegItemList()
         })
       }).catch(() => {
         this.loading = false
       })
     },
-    // 保存
+    // 提交
     handleSubmit() {
       this.$refs['form'].validate((valid) => {
         if (valid) {
+          // 添加
           this.loading = true
           if (this.form.id === undefined) {
-            // 添加科室信息
-            addDept(this.form).then(res => {
-              this.msgSuccess('添加成功')
-              this.loading = false
-              this.getDeptList()
+            addRegisteredItem(this.form).then(res => {
               this.open = false
+              this.loading = false
+              this.msgSuccess('添加成功')
+              this.getRegItemList()
             }).catch(() => {
               this.loading = false
             })
           } else {
-            // 修改科室信息
-            updateDept(this.form).then(res => {
-              this.msgSuccess('修改成功')
+            // 修改
+            updateRegisteredItem(this.form).then(res => {
               this.loading = false
-              this.getDeptList()
               this.open = false
+              this.msgSuccess('修改成功')
+              this.getRegItemList()
             }).catch(() => {
               this.loading = false
             })
@@ -298,17 +288,14 @@ export default {
     // 取消
     cancel() {
       this.open = false
+      this.title = ''
     },
     // 重置表单
     reset() {
       this.form = {
         id: undefined,
-        deptName: undefined,
-        deptNumber: undefined,
-        regNumber: 0,
-        orderNum: 0,
-        deptLeader: undefined,
-        leaderPhone: undefined,
+        regItemName: undefined,
+        regItemFee: 0.00,
         status: '0'
       }
       this.resetForm('form')
@@ -320,3 +307,4 @@ export default {
 <style scoped>
 
 </style>
+

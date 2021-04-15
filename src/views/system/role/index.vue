@@ -75,14 +75,14 @@
     <!-- 数据表格开始 -->
     <el-table v-loading="loading" border :data="roleTableList" @selection-change="handleSelectionChange">
       <el-table-column type="selection" width="55" align="center" />
-      <el-table-column label="角色ID" prop="id" align="center" width="270" />
+      <el-table-column label="角色ID" prop="id" align="center" />
       <el-table-column label="角色名称" prop="roleName" align="center" />
       <el-table-column label="权限编码" prop="roleCode" align="center" />
       <el-table-column label="显示顺序" prop="roleSort" align="center" />
       <el-table-column label="状态" prop="status" align="center" :formatter="statusFormatter" />
       <el-table-column label="备注" prop="remark" align="center" />
       <el-table-column label="创建时间" prop="createTime" align="center" width="180" />
-      <el-table-column label="操作" align="center">
+      <el-table-column label="操作" align="center" width="220">
         <template slot-scope="scope">
           <el-button type="text" icon="el-icon-edit" size="mini" @click="handleUpdate(scope.row)">修改</el-button>
           <el-button type="text" icon="el-icon-delete" size="mini" @click="handleDelete(scope.row)">删除</el-button>

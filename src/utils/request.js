@@ -4,9 +4,7 @@ import store from '@/store'
 import { getToken } from '@/utils/auth'
 
 const service = axios.create({
-  baseURL: process.env.VUE_APP_BASE_API, // url = base url + request url
-  timeout: 50000, // 请求超时时间
-  headers: { 'Content-Type': 'application/x-www-form-urlencoded' } // 设置头
+  baseURL: process.env.VUE_APP_BASE_API // url = base url + request url
 })
 
 // 请求拦截
