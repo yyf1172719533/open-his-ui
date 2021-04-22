@@ -81,8 +81,8 @@ export default {
   name: 'Login',
   components: { SocialSign },
   data() {
-    const validateUsername = (rule, value, callback) => {
-      if (!validUsername(value)) {
+    const validateUserName = (rule, value, callback) => {
+      if (!value) {
         callback(new Error('请输入用户名'))
       } else {
         callback()
@@ -97,12 +97,18 @@ export default {
     }
     return {
       loginForm: {
-        userName: '13888001002',
-        password: '001002'
+        userName: undefined,
+        password: undefined
       },
       loginRules: {
-        userName: [{ required: true, trigger: 'blur', validator: validateUsername }],
-        password: [{ required: true, trigger: 'blur', validator: validatePassword }]
+        userName: [
+          { required: true, message: '用户名不能为空', trigger: 'blur' },
+          { validator: validateUserName, trigger: 'blur' }
+        ],
+        password: [
+          { required: true, message: '密码不能为空', trigger: 'blur' },
+          { validator: validatePassword, trigger: 'blur' }
+        ]
       },
       passwordType: 'password',
       capsTooltip: false,
@@ -153,7 +159,7 @@ export default {
       })
     },
     handleLogin() {
-      this.$refs.loginForm.validate(valid => {
+      this.$refs['loginForm'].validate((valid) => {
         if (valid) {
           this.loading = true
           this.$store.dispatch('user/login', this.loginForm)

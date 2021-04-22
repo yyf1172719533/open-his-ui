@@ -93,15 +93,15 @@
     <el-table v-loading="loading" border :data="producterTableList" @selection-change="handleSelectionChange">
       <el-table-column type="selection" width="55" align="center" />
       <el-table-column label="ID" align="center" prop="id" />
-      <el-table-column label="厂家名称" align="center" prop="producterName" width="150" />
+      <el-table-column label="厂家名称" align="center" prop="producterName" />
       <el-table-column label="厂家代码" align="center" prop="producterCode" />
       <el-table-column label="联系人" align="center" prop="producterPerson" />
-      <el-table-column label="厂家电话" align="center" prop="producterPhone" width="120" />
-      <el-table-column label="厂家地址" align="center" prop="producterAddress" width="200" />
+      <el-table-column label="厂家电话" align="center" prop="producterPhone" />
+      <el-table-column label="厂家地址" align="center" prop="producterAddress" />
       <el-table-column label="关键字" align="center" prop="keywords" />
       <el-table-column label="状态" prop="status" align="center" :formatter="statusFormatter" />
-      <el-table-column label="创建时间" align="center" prop="createTime" width="160" />
-      <el-table-column label="操作" align="center" width="120">
+      <el-table-column label="创建时间" align="center" prop="createTime" />
+      <el-table-column label="操作" align="center" >
         <template slot-scope="scope">
           <el-button type="text" icon="el-icon-edit" size="mini" @click="handleUpdate(scope.row)">修改</el-button>
           <el-button type="text" icon="el-icon-delete" size="mini" @click="handleDelete(scope.row)">删除</el-button>
