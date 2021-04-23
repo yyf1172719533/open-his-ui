@@ -41,6 +41,7 @@ module.exports = {
     proxy: {
       [process.env.VUE_APP_BASE_API]: {
         target: 'http://127.0.0.1:8100/',
+        // target: 'http://keepstudy.net.cn:8001/',
         changeOrigin: true,
         pathRewrite: {
           ['^' + process.env.VUE_APP_BASE_API ]: ''

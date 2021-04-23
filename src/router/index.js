@@ -221,7 +221,7 @@ export const asyncRoutes = [
       },
       {
         path: 'medicinal',
-        component: () => import('@/views/error-page/404'),
+        component: () => import('@/views/erp/medicines/index'),
         name: '/stock/medicinal',
         meta: { title: '药品信息维护', icon: 'list' }
       },
