@@ -283,11 +283,6 @@
               </el-radio-group>
             </el-form-item>
           </el-col>
-          <el-col :span="12">
-            <el-form-item label="库存量" prop="medicineStockNum">
-              <el-input-number v-model="form.medicineStockNum" style="width:240px" placeholder="请输入库存量" size="small" />
-            </el-form-item>
-          </el-col>
         </el-row>
       </el-form>
       <span slot="footer" class="dialog-footer">
