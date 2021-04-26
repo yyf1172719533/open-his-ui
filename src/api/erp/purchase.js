@@ -71,7 +71,7 @@ export function addPurchase(data) {
   return request({
     url: '/erp/purchase/addPurchase',
     method: 'post',
-    params: data
+    data: data
   })
 }
 
@@ -80,7 +80,7 @@ export function addPurchaseToAudit(data) {
   return request({
     url: '/erp/purchase/addPurchaseToAudit',
     method: 'post',
-    params: data
+    data: data
   })
 }
 
