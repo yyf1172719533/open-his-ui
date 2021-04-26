@@ -73,7 +73,13 @@
     <!-- 数据表格开始 -->
     <el-table v-loading="loading" border :data="purchaseTableList" @selection-change="handleSelectionChange">
       <el-table-column type="selection" width="55" align="center" />
-      <el-table-column label="单据ID" align="center" prop="id" />
+      <el-table-column label="单据ID" align="center" prop="id">
+        <template slot-scope="scope">
+          <router-link :to="'/erp/purchase/editPurchase/' + scope.row.id" class="link-type">
+            <span>{{ scope.row.id }}</span>
+          </router-link>
+        </template>
+      </el-table-column>
       <el-table-column label="供应商" align="center" prop="providerId" :formatter="providerFormatter" />
       <el-table-column label="采购批发总金额" align="center" prop="purchaseTradeTotalAmount">
         <template slot-scope="scope">

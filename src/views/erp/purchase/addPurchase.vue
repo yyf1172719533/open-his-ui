@@ -257,7 +257,7 @@
 import { selectAllProvider } from '@/api/erp/provider'
 import { listMedicinesForPage } from '@/api/erp/medicine'
 import { selectAllProducter } from '@/api/erp/producter'
-import { generatePurchaseId } from '@/api/erp/purchase'
+import { generatePurchaseId, addPurchase, addPurchaseToAudit } from '@/api/erp/purchase'
 
 export default {
   filters: {
@@ -477,11 +477,50 @@ export default {
     },
     // 暂存
     handleSubmit() {
-      // TODO
+      if (this.purchaseItemList.length > 0) {
+        this.$refs['form'].validate((valid) => {
+          if (valid) {
+            this.loading = true
+            const purchaseFormDto = {
+              'purchaseDto': this.form,
+              'purchaseItemDto': this.purchaseItemList
+            }
+            addPurchase(purchaseFormDto).then(res => {
+              this.msgSuccess('暂存成功')
+              this.loading = false
+            }).catch(() => {
+              this.msgError('暂存失败')
+              this.loading = false
+            })
+          }
+        })
+      } else {
+        this.msgError('药品数据项不能为空')
+      }
     },
     // 保存并提交审核
     handleSubmitAndAudit() {
-      // TODO
+      if (this.purchaseItemList.length > 0) {
+        this.$refs['form'].validate((valid) => {
+          if (valid) {
+            this.loading = true
+            const purchaseFormDto = {
+              'purchaseDto': this.form,
+              'purchaseItemDto': this.purchaseItemList
+            }
+            addPurchaseToAudit(purchaseFormDto).then(res => {
+              this.msgSuccess('提交审核成功')
+              this.loading = false
+              this.isSubmit = true
+            }).catch(() => {
+              this.msgError('提交审核失败')
+              this.loading = false
+            })
+          }
+        })
+      } else {
+        this.msgError('药品数据项不能为空')
+      }
     },
     // 删除采购详情数据
     handleDelete(index, row) {

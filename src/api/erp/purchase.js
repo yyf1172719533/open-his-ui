@@ -65,3 +65,29 @@ export function generatePurchaseId() {
     method: 'get'
   })
 }
+
+// 暂存采购单数据和详情
+export function addPurchase(data) {
+  return request({
+    url: '/erp/purchase/addPurchase',
+    method: 'post',
+    params: data
+  })
+}
+
+// 保存并提交审核采购单数据和详情
+export function addPurchaseToAudit(data) {
+  return request({
+    url: '/erp/purchase/addPurchaseToAudit',
+    method: 'post',
+    params: data
+  })
+}
+
+// 根据单据ID查询采购单信息和详情信息
+export function queryPurchaseAndItemByPurchaseId(purchaseId) {
+  return request({
+    url: '/erp/purchase/queryPurchaseAndItemByPurchaseId/' + purchaseId,
+    method: 'get'
+  })
+}
