@@ -57,3 +57,11 @@ export function getPurchaseItemById(purchaseId) {
     method: 'get'
   })
 }
+
+// 生产采购单据ID
+export function generatePurchaseId() {
+  return request({
+    url: '/erp/purchase/generatePurchaseId',
+    method: 'get'
+  })
+}

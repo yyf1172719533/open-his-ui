@@ -239,7 +239,7 @@ export const asyncRoutes = [
       },
       {
         path: 'examine',
-        component: () => import('@/views/error-page/404'),
+        component: () => import('@/views/erp/purchase/auditList'),
         name: '/stock/examine',
         meta: { title: '入库审核', icon: 'list' }
       },
@@ -387,14 +387,14 @@ export const lastRoute = [
     ]
   },
   {
-    path: '/stock/purchase',
+    path: '/erp/purchase',
     component: Layout,
     hidden: true,
     children: [
       {
-        path: 'insert',
-        component: () => import('@/views/error-page/404'),
-        name: '/stock/purchase/insert',
+        path: 'addPurchase',
+        component: () => import('@/views/erp/purchase/addPurchase'),
+        name: '/erp/purchase/addPurchase',
         meta: { title: '采购入库', icon: 'list' }
       },
       {

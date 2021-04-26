@@ -75,20 +75,10 @@
       <el-table-column type="selection" width="55" align="center" />
       <el-table-column label="单据ID" align="center" prop="id" />
       <el-table-column label="供应商" align="center" prop="providerId" :formatter="providerFormatter" />
-      <el-table-column label="采购批发总金额" align="center" prop="purchaseTradeTotalAmount">
-        <template slot-scope="scope">
-          <span>{{ scope.row.purchaseTradeTotalAmount | rounding }}</span>
-        </template>
-      </el-table-column>
+      <el-table-column label="采购批发总金额" align="center" prop="purchaseTradeTotalAmount" />
       <el-table-column label="申请人" align="center" prop="applyUserName" />
       <el-table-column label="入库操作人" align="center" prop="storageOptUser" />
-      <el-table-column label="状态" prop="status" align="center" :formatter="statusFormatter">
-        <template slot-scope="scope">
-          <el-tag :type="formatTagType(scope.row.status)">
-            {{ scope.row.status | statusFilter }}
-          </el-tag>
-        </template>
-      </el-table-column>
+      <el-table-column label="状态" prop="status" align="center" :formatter="statusFormatter" />
       <el-table-column label="入库时间" align="center" prop="storageOptTime" />
       <el-table-column label="创建时间" align="center" prop="createTime" />
     </el-table>
@@ -114,20 +104,6 @@ import { listPurchaseForPage, doAudit, doInvalid } from '@/api/erp/purchase'
 import { selectAllProvider } from '@/api/erp/provider'
 
 export default {
-  filters: {
-    statusFilter(value) {
-      if (value === '1') return '未提交'
-      if (value === '2') return '待审核'
-      if (value === '3') return '审核通过'
-      if (value === '4') return '审核失败'
-      if (value === '5') return '作废'
-      if (value === '6') return '入库成功'
-    },
-    // 保留两位小数
-    rounding(value) {
-      return value.toFixed(2)
-    }
-  },
   data() {
     return {
       // 是否打开遮罩层
@@ -206,11 +182,6 @@ export default {
       this.queryParams.pageNum = val
       this.getPurchaseList()
     },
-    formatTagType(status) {
-      if (status === '3' || status === '6') return 'success'
-      else if (status === '1' || status === '2') return 'primary'
-      else if (status === '4' || status === '5') return 'danger'
-    },
     // 状态转换
     statusFormatter(row) {
       return this.selectDictLabel(this.statusOptions, row.status)
@@ -268,10 +239,6 @@ export default {
       }).catch(() => {
         this.loading = false
       })
-    },
-    // 跳转到新增采购的路由页面
-    handleAdd() {
-      this.$router.replace('/erp/purchase/addPurchase')
     }
   }
 }
