@@ -245,7 +245,7 @@ export const asyncRoutes = [
       },
       {
         path: 'inventory',
-        component: () => import('@/views/error-page/404'),
+        component: () => import('@/views/erp/inventoryLog/index'),
         name: '/stock/inventory',
         meta: { title: '库存查询', icon: 'list' }
       }
@@ -399,8 +399,8 @@ export const lastRoute = [
       },
       {
         path: 'update/:purchaseId',
-        component: () => import('@/views/error-page/404'),
-        name: '/stock/purchase/update',
+        component: () => import('@/views/erp/purchase/editPurchase'),
+        name: '/erp/purchase/editPurchase',
         meta: { title: '采购入库修改', icon: 'list' }
       }
     ]

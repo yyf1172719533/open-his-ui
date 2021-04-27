@@ -257,7 +257,7 @@
 import { selectAllProvider } from '@/api/erp/provider'
 import { listMedicinesForPage } from '@/api/erp/medicine'
 import { selectAllProducter } from '@/api/erp/producter'
-import { generatePurchaseId, addPurchase, addPurchaseToAudit } from '@/api/erp/purchase'
+import { addPurchase, addPurchaseToAudit, queryPurchaseAndItemByPurchaseId } from '@/api/erp/purchase'
 
 export default {
   filters: {
@@ -341,9 +341,17 @@ export default {
     selectAllProvider().then(res => {
       this.providerOptions = res.data
     })
-    // 加载单据号
-    generatePurchaseId().then(res => {
-      this.form.id = res.data
+    // 根据单据ID加载采购数据和详情数据
+    const purchaseId = this.$route.params && this.$route.params.id
+    queryPurchaseAndItemByPurchaseId(purchaseId).then(res => {
+      this.form = res.data.purchase
+      this.form.providerId = parseInt(this.form.providerId)
+      this.purchaseItemList = res.data.items
+
+      // 如果当前单据状态为1或者4可以进行修改
+      if (res.data.purchase.status === '1' || res.data.purchase.status === '4') {
+        this.isSubmit = false
+      }
     })
     // 加载生产厂家数据
     selectAllProducter().then(res => {

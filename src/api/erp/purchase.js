@@ -91,3 +91,11 @@ export function queryPurchaseAndItemByPurchaseId(purchaseId) {
     method: 'get'
   })
 }
+
+// 采购单数据入库
+export function doInventory(purchaseId) {
+  return request({
+    url: '/erp/purchase/doInventory/' + purchaseId,
+    method: 'post'
+  })
+}
