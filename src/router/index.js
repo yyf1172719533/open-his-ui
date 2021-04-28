@@ -398,7 +398,7 @@ export const lastRoute = [
         meta: { title: '采购入库', icon: 'list' }
       },
       {
-        path: 'update/:purchaseId',
+        path: 'editPurchase/:id',
         component: () => import('@/views/erp/purchase/editPurchase'),
         name: '/erp/purchase/editPurchase',
         meta: { title: '采购入库修改', icon: 'list' }

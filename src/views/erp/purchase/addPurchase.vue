@@ -71,6 +71,7 @@
       >
         <el-table-column label="药品ID" align="center" width="80px" prop="medicinesId" />
         <el-table-column label="药品名称" align="center" width="160" prop="medicinesName" />
+        <el-table-column label="药品类型" align="center" width="160" prop="medicinesType" :formatter="medicinesTypeFormatter" />
         <el-table-column label="规格" align="center" width="80" prop="conversion">
           <template slot-scope="scope">
             <span> {{ scope.row.conversion }}{{ scope.row.unit }}</span>
@@ -82,6 +83,7 @@
             <el-input-number
               v-model="scope.row.purchaseNumber"
               :step="1"
+              :min="0"
               size="small"
             />
           </template>
@@ -92,6 +94,7 @@
             <el-input-number
               v-model="scope.row.tradePrice"
               :step="0.1"
+              :min="0"
               :precision="2"
               size="small"
             />
@@ -232,10 +235,10 @@
     >
       <el-form ref="batchSetForm" :model="batchSetForm" label-width="110px">
         <el-form-item label="采购数量" prop="purchaseNumber">
-          <el-input-number v-model="batchSetForm.purchaseNumber" placeholder="请输入采购数量" size="small" />
+          <el-input-number v-model="batchSetForm.purchaseNumber" :min="0" placeholder="请输入采购数量" size="small" />
         </el-form-item>
         <el-form-item label="批发价" prop="tradePrice">
-          <el-input-number v-model="batchSetForm.tradePrice" :precision="2" placeholder="请输入批发价" size="small" />
+          <el-input-number v-model="batchSetForm.tradePrice" :precision="2" :min="0" placeholder="请输入批发价" size="small" />
         </el-form-item>
         <el-form-item label="药品生产批次号" prop="batchNumber">
           <el-input v-model="batchSetForm.batchNumber" placeholder="请输入药品生产批次号" size="small" />
@@ -416,6 +419,9 @@ export default {
     medicineFormatter(row) {
       return this.selectDictLabel(this.medicinesTypeOptions, row.medicineType)
     },
+    medicinesTypeFormatter(row) {
+      return this.selectDictLabel(this.medicinesTypeOptions, row.medicinesType)
+    },
     // 处方类型转换
     prescriptionTypeFormatter(row) {
       return this.selectDictLabel(this.prescriptionTypeOptions, row.prescriptionType)
@@ -454,6 +460,7 @@ export default {
         this.$set(m, 'remark', m.remark ? m.remark : '')
         this.$set(m, 'medicinesId', m.id ? m.id : '')
         this.$set(m, 'medicinesName', m.medicineName ? m.medicineName : '')
+        this.$set(m, 'medicinesType', m.medicineType ? m.medicineType : '')
       })
     },
     // 打开批量设置的对话框

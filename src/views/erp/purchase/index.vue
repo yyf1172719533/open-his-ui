@@ -60,7 +60,7 @@
         </el-button>
       </el-col>
       <el-col :span="1.5">
-        <el-button type="danger" icon="el-icon-delete" size="mini" :disabled="multiple" @click="handleDoInvalid">作废
+        <el-button type="danger" icon="el-icon-delete" size="mini" :disabled="single" @click="handleDoInvalid">作废
         </el-button>
       </el-col>
       <el-col :span="1.5">
@@ -116,7 +116,7 @@
 </template>
 
 <script>
-import { listPurchaseForPage, doAudit, doInvalid } from '@/api/erp/purchase'
+import { listPurchaseForPage, doAudit, doInvalid, doInventory } from '@/api/erp/purchase'
 import { selectAllProvider } from '@/api/erp/provider'
 
 export default {
@@ -146,7 +146,7 @@ export default {
       multiple: true,
       // 分页数据总条数
       total: 0,
-      // 表格公告数据
+      // 表格数据
       purchaseTableList: [],
       // 对话框标题
       title: '',
@@ -278,6 +278,28 @@ export default {
     // 跳转到新增采购的路由页面
     handleAdd() {
       this.$router.replace('/erp/purchase/addPurchase')
+    },
+    // 提交入库
+    handleDoInventory() {
+      const purchaseId = this.ids[0]
+      this.$confirm('是否确定提交入库单据ID为：' + purchaseId + '的数据?', '提示', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning'
+      }).then(() => {
+        this.loading = true
+        doInventory(purchaseId).then(res => {
+          this.loading = false
+          this.msgSuccess('入库成功')
+          this.getPurchaseList()
+        }).catch(() => {
+          this.loading = false
+          this.msgError('入库失败')
+          this.getPurchaseList()
+        })
+      }).catch(() => {
+        this.loading = false
+      })
     }
   }
 }

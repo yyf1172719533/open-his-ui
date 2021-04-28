@@ -57,7 +57,7 @@
         </el-button>
       </el-col>
       <el-col :span="1.5">
-        <el-button type="danger" icon="el-icon-delete" size="mini" :disabled="multiple" @click="handleAuditNoPass">审核不通过
+        <el-button type="danger" icon="el-icon-delete" size="mini" :disabled="single" @click="handleAuditNoPass">审核不通过
         </el-button>
       </el-col>
       <el-col :span="1.5">
@@ -87,7 +87,6 @@
         </template>
       </el-table-column>
       <el-table-column label="入库时间" align="center" prop="storageOptTime" />
-      <el-table-column label="审核信息" align="center" prop="examine" />
       <el-table-column label="创建时间" align="center" prop="createTime" />
     </el-table>
     <!-- 数据表格结束 -->
@@ -109,13 +108,14 @@
     <el-dialog
       :title="title"
       :visible.sync="open"
-      width="1000px"
+      width="1300px"
       center
       append-to-body
     >
       <el-table v-loading="loading" border :data="purchaseItemTableList">
         <el-table-column label="详情ID" width="180" align="center" prop="id" />
         <el-table-column label="单据ID" width="200" align="center" prop="purchaseId" />
+        <el-table-column label="药品名称" align="center" prop="medicinesName" />
         <el-table-column label="采购数量" align="center" prop="purchaseNumber" />
         <el-table-column label="批发价" prop="tradePrice" align="center">
           <template slot-scope="scope">
@@ -128,7 +128,6 @@
           </template>
         </el-table-column>
         <el-table-column label="药品生产批次号" align="center" prop="batchNumber" />
-        <el-table-column label="药品名称" align="center" prop="medicinesName" />
         <el-table-column label="换算量" align="center" prop="conversion" />
         <el-table-column label="单位" align="center" prop="unit" />
       </el-table>
@@ -171,7 +170,7 @@ export default {
       multiple: true,
       // 分页数据总条数
       total: 0,
-      // 表格公告数据
+      // 表格数据
       purchaseTableList: [],
       // 对话框标题
       title: '',
@@ -179,6 +178,8 @@ export default {
       open: false,
       // 状态数据字典
       statusOptions: [],
+      // 默认选中的状态
+      defaultStatus: undefined,
       // 供应商数据
       providerOptions: [],
       // 采购单详情数据
@@ -198,6 +199,12 @@ export default {
     // 加载状态
     this.getDictDataByType('his_order_status').then(res => {
       this.statusOptions = res.data
+      this.statusOptions.filter(item => {
+        if (item.dictValue === '2') {
+          this.queryParams.status = item.dictLabel
+          this.defaultStatus = item.dictLabel
+        }
+      })
     })
     // 加载供应商
     selectAllProvider().then(res => {
@@ -216,11 +223,13 @@ export default {
     },
     // 条件查询
     handleQuery() {
+      this.queryParams.status = this.defaultStatus
       this.getPurchaseList()
     },
     // 重置查询
     resetQuery() {
       this.resetForm('queryForm')
+      this.queryParams.status = this.defaultStatus
       this.getPurchaseList()
     },
     // 数据表格多选时触发
