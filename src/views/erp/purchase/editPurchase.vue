@@ -284,7 +284,7 @@ export default {
       // 对话框标题
       title: '',
       // 是否已提交
-      isSubmit: false,
+      isSubmit: true,
       // 供应商数据
       providerOptions: [],
       // 生产厂家数据
@@ -359,8 +359,6 @@ export default {
       // 如果当前单据状态为1或者4可以进行修改
       if (res.data.purchase.status === '1' || res.data.purchase.status === '4') {
         this.isSubmit = false
-      } else {
-        this.isSubmit = true
       }
     })
     // 加载生产厂家数据
