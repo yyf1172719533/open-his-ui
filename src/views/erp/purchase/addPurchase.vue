@@ -1,7 +1,7 @@
 <template>
   <div class="app-container">
     <!-- 按钮开始 -->
-    <el-card class="box-card">
+    <el-card class="box-card" shadow="always" style="margin-bottom: 5px">
       <div style="text-align: right">
         <el-button type="primary" icon="el-icon-plus" :disabled="isSubmit" size="small" @click="handleAddMedicines">添加药品</el-button>
         <el-button type="success" icon="el-icon-s-operation" :disabled="isSubmit" size="small" @click="handleBatchSet">批量设置</el-button>
@@ -12,7 +12,7 @@
     <!-- 按钮结束 -->
 
     <!-- 主表单开始 -->
-    <el-card class="box-card">
+    <el-card class="box-card" shadow="always" style="margin-bottom: 5px">
       <el-form ref="form" :model="form" :rules="rules" :inline="true" label-width="88px">
         <el-row :gutter="10">
           <el-col :span="1.5">
@@ -32,6 +32,7 @@
                 v-model="form.providerId"
                 placeholder="请选择供应商"
                 clearable
+                :disabled="isSubmit"
                 size="small"
                 style="width:220px"
               >
@@ -85,6 +86,7 @@
               :step="1"
               :min="0"
               size="small"
+              :disabled="isSubmit"
             />
           </template>
         </el-table-column>
@@ -97,6 +99,7 @@
               :min="0"
               :precision="2"
               size="small"
+              :disabled="isSubmit"
             />
           </template>
         </el-table-column>
@@ -110,6 +113,7 @@
             <el-input
               v-model="scope.row.batchNumber"
               size="small"
+              :disabled="isSubmit"
             />
           </template>
         </el-table-column>
@@ -118,6 +122,7 @@
             <el-input
               v-model="scope.row.remark"
               size="small"
+              :disabled="isSubmit"
             />
           </template>
         </el-table-column>

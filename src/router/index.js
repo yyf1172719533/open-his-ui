@@ -359,7 +359,7 @@ export const asyncRoutes = [
       },
       {
         path: 'scheduling',
-        component: () => import('@/views/error-page/404'),
+        component: () => import('@/views/doctor/scheduling/index'),
         name: '/doctor/scheduling',
         meta: { title: '医生排班', icon: 'list' }
       },

@@ -62,3 +62,11 @@ export function saveUserRole(userId, roleIds) {
     method: 'post'
   })
 }
+
+// 查询所有可用的用户
+export function selectAllUser() {
+  return request({
+    url: '/system/user/selectAllUser',
+    method: 'get'
+  })
+}
