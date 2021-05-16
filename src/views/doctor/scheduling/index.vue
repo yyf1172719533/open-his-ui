@@ -208,8 +208,8 @@
         </el-table-column>
       </el-table>
       <span slot="footer" class="dialog-footer">
-        <el-button type="primary" @click="handleSubmit">确定</el-button>
-        <el-button @click="cancel">取消</el-button>
+        <el-button type="primary" round @click="handleSubmit">确定</el-button>
+        <el-button round @click="cancel">取消</el-button>
       </span>
     </el-dialog>
     <!-- 修改对话框结束 -->
@@ -217,8 +217,8 @@
 </template>
 
 <script>
+import { queryUsersNeedScheduling, queryScheduling, saveScheduling } from '@/api/doctor/scheduling'
 import { selectAllDept } from '@/api/system/dept'
-import { selectAllUser } from '@/api/system/user'
 
 export default {
   data() {
@@ -264,8 +264,8 @@ export default {
     selectAllDept().then(res => {
       this.deptOptions = res.data
     })
-    // 加载医生
-    selectAllUser().then(res => {
+    // 加载需要排班的医生数据
+    queryUsersNeedScheduling().then(res => {
       this.userOptions = res.data
     })
     // 加载排班时段
@@ -276,17 +276,43 @@ export default {
     this.getDictDataByType('his_scheduling_type').then(res => {
       this.schedulingTypeOptions = res.data
     })
+    this.getSchedulingList()
   },
   methods: {
+    // 查询排班数据
+    getSchedulingList() {
+      this.loading = true
+      queryScheduling(this.queryParams).then(res => {
+        console.log(res)
+        this.tableData = res.data.tableData
+        this.labelNames = res.data.labelNames
+        this.schedulingData = res.data.schedulingData
+        this.loading = false
+      })
+    },
+    // 查询
     handleQuery() {
+      this.getSchedulingList()
     },
+    // 重置查询
     resetQuery() {
+      this.resetForm('queryForm')
+      this.getSchedulingList()
     },
+    // 上一周
     upWeek() {
+      this.queryParams.queryDate = this.schedulingData.startTimeThisWeek
+      this.getSchedulingList()
     },
+    // 当前周
     currentWeek() {
+      this.queryParams.queryDate = undefined
+      this.getSchedulingList()
     },
+    // 下一周
     nextWeek() {
+      this.queryParams.queryDate = this.schedulingData.endTimeThisWeek
+      this.getSchedulingList()
     },
     // 医生转换数据
     userFormatter(row) {
@@ -336,6 +362,20 @@ export default {
     },
     // 编辑
     editScheduling(userId) {
+      this.editData = []
+      this.open = true
+      let name = ''
+      this.userOptions.filter(item => {
+        if (userId === item.id) {
+          name = item.userName
+        }
+      })
+      this.title = '修改【' + name + '】的排班信息'
+      this.tableData.filter(item => {
+        if (userId === item.userId) {
+          this.editData.push(item)
+        }
+      })
     },
     // 合并单元格
     spanMethod({ row, column, rowIndex, columnIndex }) {
@@ -374,9 +414,22 @@ export default {
     },
     // 提交
     handleSubmit() {
+      this.loading = true
+      const form = { beginDate: this.schedulingData.startTimeThisWeek, data: this.editData }
+      saveScheduling(form).then(res => {
+        this.loading = false
+        this.open = false
+        this.msgSuccess('保存成功')
+        this.getSchedulingList()
+      }).catch(() => {
+        this.loading = false
+        this.open = false
+        this.msgError('保存失败')
+      })
     },
     // 取消
     cancel() {
+      this.open = false
     }
   }
 }
