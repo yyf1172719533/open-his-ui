@@ -50,3 +50,51 @@ export function handleTree(data, id, parentId, children, rootId) {
   // console.log(treeData)
   return treeData !== '' ? treeData : data
 }
+
+// 根据出生年月日计算年龄
+export function getAge(birthday) {
+  var birArr = birthday.split('-')
+  var birYear = parseInt(birArr[0])
+  var birMonth = parseInt(birArr[1])
+  var birDay = parseInt(birArr[2])
+  d = new Date()
+  var nowYear = d.getFullYear()
+  var nowMonth = d.getMonth() + 1
+  var nowDay = d.getDate()
+  var returnAge
+
+  if (birArr == null) {
+    return false
+  }
+  var d = new Date(birYear, birMonth - 1, birDay)
+
+  if (d.getFullYear() === birYear && (d.getMonth() + 1) === birMonth && d.getDate() === birDay) {
+    if (nowYear === birYear) {
+      returnAge = 0
+    } else {
+      var ageDiff = nowYear - birYear
+      if (ageDiff > 0) {
+        if (nowMonth === birMonth) {
+          var dayDiff = nowDay - birDay
+          if (dayDiff < 0) {
+            returnAge = ageDiff - 1
+          } else {
+            returnAge = ageDiff
+          }
+        } else {
+          var monthDiff = nowMonth - birMonth
+          if (monthDiff < 0) {
+            returnAge = ageDiff - 1
+          } else {
+            returnAge = ageDiff
+          }
+        }
+      } else {
+        return '出生日期晚于今天，数据有误'
+      }
+    }
+    return returnAge
+  } else {
+    return '输入的日期格式有误'
+  }
+}

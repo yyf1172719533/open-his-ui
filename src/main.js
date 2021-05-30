@@ -20,7 +20,7 @@ import './utils/error-log' // error log
 
 import * as filters from './filters' // global filters
 
-import { resetForm, addDateRange, selectDictLabel, handleTree } from '@/utils/his-utils'
+import { resetForm, addDateRange, selectDictLabel, handleTree, getAge } from '@/utils/his-utils'
 import { getDictDataByType } from '@/api/system/dict/data'
 
 // 全局方法挂载
@@ -29,6 +29,7 @@ Vue.prototype.addDateRange = addDateRange
 Vue.prototype.selectDictLabel = selectDictLabel
 Vue.prototype.getDictDataByType = getDictDataByType
 Vue.prototype.handleTree = handleTree
+Vue.prototype.getAge = getAge
 
 // 全局消息框挂载
 Vue.prototype.msgSuccess = function(msg) {
