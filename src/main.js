@@ -19,8 +19,9 @@ import './permission' // permission control
 import './utils/error-log' // error log
 
 import * as filters from './filters' // global filters
+import moment from 'moment'
 
-import { resetForm, addDateRange, selectDictLabel, handleTree, getAge } from '@/utils/his-utils'
+import { resetForm, addDateRange, selectDictLabel, handleTree, getAge, getCurrentTimeType } from '@/utils/his-utils'
 import { getDictDataByType } from '@/api/system/dict/data'
 
 // 全局方法挂载
@@ -30,6 +31,8 @@ Vue.prototype.selectDictLabel = selectDictLabel
 Vue.prototype.getDictDataByType = getDictDataByType
 Vue.prototype.handleTree = handleTree
 Vue.prototype.getAge = getAge
+Vue.prototype.getCurrentTimeType = getCurrentTimeType
+Vue.prototype.moment = moment
 
 // 全局消息框挂载
 Vue.prototype.msgSuccess = function(msg) {
