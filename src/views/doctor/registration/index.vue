@@ -113,7 +113,8 @@
         </el-col>
         <el-col :span="12">
           <div style="float: right">
-            <el-button type="danger" icon="" :disabled="single" size="small" @click="handleRegistration">挂号收费</el-button>
+            <el-button type="danger" icon="" :disabled="single" size="small" @click="handleRegistration">挂号</el-button>
+            <el-button type="danger" icon="" :disabled="isCharge" size="small" @click="handleCharge">收费</el-button>
             <span style="margin-left: 20px;color: black;font-weight: bolder">挂号费:￥{{ queryDeptParams.regAmount }}</span>
           </div>
         </el-col>
@@ -214,6 +215,8 @@ export default {
       ids: [],
       // 非单个禁用
       single: true,
+      // 收费按钮
+      isCharge: true,
       // 部门下拉列表
       deptOptions: [],
       // 性别
@@ -224,6 +227,8 @@ export default {
       subsectionTypeOptions: [],
       // 挂号项目
       regItemOptions: [],
+      // 挂号单ID
+      regId: undefined,
       patientParams: {
         sex: '2',
         cardNumber: undefined
@@ -351,7 +356,7 @@ export default {
       this.ids = selection.map(item => item.id)
       this.single = selection.length !== 1
     },
-    // 挂号收费
+    // 挂号
     handleRegistration() {
       const tx = this
       tx.$refs['form'].validate(vaid => {
@@ -378,30 +383,38 @@ export default {
             // 挂号
             addRegistration(data).then(res => {
               const id = res.data
+              this.regId = id
               tx.msgSuccess('挂号成功，挂号单号为【' + id + '】')
+              this.isCharge = false
               // 清空页面数据
               tx.resetDeptQuery()
               tx.patientParams = { sex: '2' }
-              tx.$confirm('是否确认给【' + id + '】的挂号单收费?', '提示', {
-                confirmButtonText: '确定',
-                cancelButtonText: '取消',
-                closeOnClickModal: false,
-                type: 'waring',
-                center: true
-              }).then(() => {
-                // 挂号单收费
-                collectFee(id).then(res => {
-                  tx.msgSuccess('收费成功')
-                  tx.getDeptForScheduling()
-                }).catch(() => {
-                  tx.msgError('收费失败')
-                })
-              })
             }).catch(() => {
               tx.msgError('挂号失败')
             })
           })
         }
+      })
+    },
+    // 收费
+    handleCharge() {
+      const tx = this
+      const id = this.regId
+      tx.$confirm('是否确认给【' + id + '】的挂号单收费?', '提示', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        closeOnClickModal: false,
+        type: 'waring',
+        center: true
+      }).then(() => {
+        // 挂号单收费
+        collectFee(id).then(res => {
+          tx.msgSuccess('收费成功')
+          tx.getDeptForScheduling()
+          this.isCharge = true
+        }).catch(() => {
+          tx.msgError('收费失败')
+        })
       })
     }
   }
