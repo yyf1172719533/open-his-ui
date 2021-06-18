@@ -341,7 +341,7 @@ export const asyncRoutes = [
       },
       {
         path: 'registeredlist',
-        component: () => import('@/views/error-page/404'),
+        component: () => import('@/views/doctor/registration/list'),
         name: '/doctor/registeredlist',
         meta: { title: '挂号列表', icon: 'list' }
       },

@@ -33,3 +33,12 @@ export function collectFee(id) {
     method: 'post'
   })
 }
+
+// 条件分页查询挂号列表
+export function queryRegistrationForPage(query) {
+  return request({
+    url: '/doctor/registration/queryRegistrationForPage',
+    method: 'get',
+    params: query
+  })
+}
