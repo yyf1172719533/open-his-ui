@@ -42,3 +42,19 @@ export function queryRegistrationForPage(query) {
     params: query
   })
 }
+
+// 挂号单作废
+export function doInvalid(id) {
+  return request({
+    url: '/doctor/registration/doInvalid/' + id,
+    method: 'post'
+  })
+}
+
+// 挂号单退号
+export function doReturn(id) {
+  return request({
+    url: '/doctor/registration/doReturn/' + id,
+    method: 'post'
+  })
+}

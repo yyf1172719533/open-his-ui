@@ -125,7 +125,7 @@
         <template slot-scope="scope">
           <el-button v-if="scope.row.regStatus === '0'" type="success" icon="el-icon-check" size="mini" @click="handleCollect(scope.row)">收费</el-button>
           <el-button v-if="scope.row.regStatus === '1'" type="danger" icon="el-icon-close" size="mini" @click="handleReturn(scope.row)">退号</el-button>
-          <el-button v-if="scope.row.regStatus === '0'" type="danger" icon="el-icon-check" size="mini" @click="handleInvalid(scope.row)">作废</el-button>
+          <el-button v-if="scope.row.regStatus === '0'" type="danger" icon="el-icon-close" size="mini" @click="handleInvalid(scope.row)">作废</el-button>
         </template>
       </el-table-column>
     </el-table>
@@ -148,7 +148,7 @@
 
 <script>
 import { selectAllDept } from '@/api/system/dept'
-import { queryRegistrationForPage } from '@/api/doctor/registration'
+import { queryRegistrationForPage, collectFee, doInvalid, doReturn } from '@/api/doctor/registration'
 
 export default {
   // 过滤器
@@ -261,16 +261,37 @@ export default {
       return this.selectDictLabel(this.regStatusOptions, row.regStatus)
     },
     // 收费
-    handleCollect() {
-      // TODO
+    handleCollect(row) {
+      this.loading = true
+      collectFee(row.id).then(res => {
+        this.msgSuccess('收费成功')
+        this.getRegistrationList()
+        this.loading = false
+      }).catch(() => {
+        this.msgError('收费失败')
+      })
     },
     // 退号
-    handleReturn() {
-      // TODO
+    handleReturn(row) {
+      this.loading = true
+      doReturn(row.id).then(res => {
+        this.msgSuccess('退号成功')
+        this.getRegistrationList()
+        this.loading = false
+      }).catch(() => {
+        this.loading = false
+      })
     },
     // 作废
-    handleInvalid() {
-      // TODO
+    handleInvalid(row) {
+      this.loading = true
+      doInvalid(row.id).then(res => {
+        this.msgSuccess('作废成功')
+        this.getRegistrationList()
+        this.loading = false
+      }).catch(() => {
+        this.loading = false
+      })
     }
   }
 }
