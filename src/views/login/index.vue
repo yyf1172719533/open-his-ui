@@ -57,9 +57,9 @@
           <span></span>
         </div>
 
-        <el-button class="thirdparty-button" type="primary" @click="showDialog=true">
+<!--        <el-button class="thirdparty-button" type="primary" @click="showDialog=true">
           第三方登录
-        </el-button>
+        </el-button>-->
       </div>
     </el-form>
 
@@ -74,7 +74,6 @@
 </template>
 
 <script>
-import { validUsername } from '@/utils/validate'
 import SocialSign from './components/SocialSignin'
 
 export default {
@@ -162,16 +161,15 @@ export default {
       this.$refs['loginForm'].validate((valid) => {
         if (valid) {
           this.loading = true
-          this.$store.dispatch('user/login', this.loginForm)
-            .then(() => {
-              this.$router.push({ path: this.redirect || '/', query: this.otherQuery })
-              this.loading = false
-            })
-            .catch(() => {
-              this.loading = false
-            })
+          this.$store.dispatch('user/login', this.loginForm).then(res => {
+            this.$router.push({ path: this.redirect || '/', query: this.query })
+            this.msgSuccess('登录成功')
+            this.loading = false
+          }).catch(() => {
+            this.msgError('用户名或密码不正确')
+            this.loading = false
+          })
         } else {
-          console.log('error submit!!')
           return false
         }
       })

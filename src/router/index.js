@@ -347,7 +347,7 @@ export const asyncRoutes = [
       },
       {
         path: 'newcare',
-        component: () => import('@/views/error-page/404'),
+        component: () => import('@/views/doctor/care/index'),
         name: '/doctor/newcare',
         meta: { title: '新开就诊', icon: 'list' }
       },
