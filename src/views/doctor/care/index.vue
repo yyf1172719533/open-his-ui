@@ -57,6 +57,7 @@
                   :key="d.dictValue"
                   :label="d.dictValue"
                   :value="d.dictValue"
+                  :disabled="true"
                 >
                   {{ d.dictLabel }}
                 </el-radio>
@@ -106,7 +107,7 @@
           </el-form>
           <el-tabs :stretch="true" type="card">
             <el-tab-pane label="患者档案">
-              <div v-if="patientAllObj.patientFileObj.isFinal === '1'">
+              <div v-if="patientAllObj.patientObj.isFinal === '1'">
                 <div class="item">
                   紧急联系人:<span v-text="patientAllObj.patientFileObj.emergencyContactName" />
                 </div>
@@ -216,15 +217,123 @@
       <!-- 右边接诊信息结束 -->
     </el-row>
     <!-- 底层卡片结束 -->
+
+    <!-- 选择患者对话框开始 -->
+    <el-dialog
+      title="请选择挂号患者"
+      :visible.sync="openRegistration"
+      width="1000px"
+      center
+      :close-on-click-modal="false"
+      append-to-body
+    >
+      <el-tabs v-model="activeName" :stretch="true" type="card" @tab-click="handleRegistrationTabClick">
+        <el-tab-pane label="待就诊列表" name="t1">
+          <el-table v-loading="tableLoading" border :data="toBeSeenRegistration">
+            <el-table-column type="expand">
+              <template slot-scope="scope">
+                <el-form label-position="right" inline class="demo-table-expand">
+                  <el-form-item label="挂号ID">
+                    <span>{{ scope.row.id }}</span>
+                  </el-form-item>
+                  <el-form-item label="患者ID">
+                    <span>{{ scope.row.patientId }}</span>
+                  </el-form-item>
+                  <el-form-item label="操作人">
+                    <span>{{ scope.row.createBy }}</span>
+                  </el-form-item>
+                  <el-form-item label="挂号时间">
+                    <span>{{ scope.row.createTime }}</span>
+                  </el-form-item>
+                </el-form>
+              </template>
+            </el-table-column>
+            <el-table-column label="患者姓名" align="center" prop="patientName" />
+            <el-table-column label="挂号编号" align="center" prop="regNumber" />
+            <el-table-column label="挂号类型" align="center" prop="schedulingType" :formatter="schedulingTypeFormatter" />
+            <el-table-column label="操作" align="center">
+              <template slot-scope="scope">
+                <el-button type="success" icon="el-icon-check" size="mini" @click="handleVisit(scope.row)">接诊</el-button>
+              </template>
+            </el-table-column>
+          </el-table>
+        </el-tab-pane>
+        <el-tab-pane label="就诊中列表" name="t2">
+          <el-table v-loading="tableLoading" border :data="visitingRegistration">
+            <el-table-column type="expand">
+              <template slot-scope="scope">
+                <el-form label-position="right" inline class="demo-table-expand">
+                  <el-form-item label="挂号ID">
+                    <span>{{ scope.row.id }}</span>
+                  </el-form-item>
+                  <el-form-item label="患者ID">
+                    <span>{{ scope.row.patientId }}</span>
+                  </el-form-item>
+                  <el-form-item label="操作人">
+                    <span>{{ scope.row.createBy }}</span>
+                  </el-form-item>
+                  <el-form-item label="挂号时间">
+                    <span>{{ scope.row.createTime }}</span>
+                  </el-form-item>
+                </el-form>
+              </template>
+            </el-table-column>
+            <el-table-column label="患者姓名" align="center" prop="patientName" />
+            <el-table-column label="挂号编号" align="center" prop="regNumber" />
+            <el-table-column label="挂号类型" align="center" prop="schedulingType" :formatter="schedulingTypeFormatter" />
+            <el-table-column label="操作" align="center">
+              <template slot-scope="scope">
+                <el-button type="success" icon="el-icon-check" size="mini" @click="handleLoading(scope.row)">载入</el-button>
+              </template>
+            </el-table-column>
+          </el-table>
+        </el-tab-pane>
+        <el-tab-pane label="就诊完成列表" name="t3">
+          <el-table v-loading="tableLoading" border :data="visitCompletedRegistration">
+            <el-table-column type="expand">
+              <template slot-scope="scope">
+                <el-form label-position="right" inline class="demo-table-expand">
+                  <el-form-item label="挂号ID">
+                    <span>{{ scope.row.id }}</span>
+                  </el-form-item>
+                  <el-form-item label="患者ID">
+                    <span>{{ scope.row.patientId }}</span>
+                  </el-form-item>
+                  <el-form-item label="操作人">
+                    <span>{{ scope.row.createBy }}</span>
+                  </el-form-item>
+                  <el-form-item label="挂号时间">
+                    <span>{{ scope.row.createTime }}</span>
+                  </el-form-item>
+                </el-form>
+              </template>
+            </el-table-column>
+            <el-table-column label="患者姓名" align="center" prop="patientName" />
+            <el-table-column label="挂号编号" align="center" prop="regNumber" />
+            <el-table-column label="挂号类型" align="center" prop="schedulingType" :formatter="schedulingTypeFormatter" />
+            <el-table-column label="操作" align="center">
+              <template slot-scope="scope">
+                <el-button type="success" icon="el-icon-check" size="mini" @click="handleLoading(scope.row)">再次载入</el-button>
+              </template>
+            </el-table-column>
+          </el-table>
+        </el-tab-pane>
+      </el-tabs>
+    </el-dialog>
+    <!-- 选择患者对话框结束 -->
   </div>
 </template>
 
 <script>
+import { queryToBeSeenRegistration, queryVisitingRegistration, queryVisitCompletedRegistration, receivePatient, getPatientAllMessageByPatientId } from '@/api/doctor/care'
+
 export default {
   data() {
     return {
       // 遮罩层
       loading: false,
+      // 对话框遮罩层
+      tableLoading: false,
       // 选项卡默认值
       schedulingType: '1',
       // 挂号类型数据
@@ -238,7 +347,17 @@ export default {
         careHistoryObjList: []
       },
       // 病历信息
-      careHistory: {}
+      careHistory: {},
+      // 是否打开挂号患者列表对话框
+      openRegistration: false,
+      // 当前选中挂号列表选项卡
+      activeName: 't1',
+      // 待就诊数据
+      toBeSeenRegistration: [],
+      // 就诊中数据
+      visitingRegistration: [],
+      // 就诊完成数据
+      visitCompletedRegistration: []
     }
   },
   created() {
@@ -255,14 +374,119 @@ export default {
     schedulingTypeChange(value) {
       this.schedulingType = value
     },
+    // 挂号类型转换
+    schedulingTypeFormatter(row) {
+      return this.selectDictLabel(this.schedulingTypeOptions, row.schedulingType)
+    },
     // 打开挂号患者列表的弹出层
     viewRegistration() {
-      //
+      this.activeName = 't1'
+      this.openRegistration = true
+      this.queryToBeSeenRegistration()
+    },
+    // 挂号列表对话框选项卡change事件
+    handleRegistrationTabClick(tab, event) {
+      if (tab.name === 't1') {
+        this.queryToBeSeenRegistration()
+      } else if (tab.name === 't2') {
+        this.queryVisitingRegistration()
+      } else if (tab.name === 't3') {
+        this.queryVisitCompletedRegistration()
+      }
+    },
+    // 查询待就诊的挂号列表数据
+    queryToBeSeenRegistration() {
+      this.tableLoading = true
+      queryToBeSeenRegistration(this.schedulingType).then(res => {
+        this.toBeSeenRegistration = res.data
+        this.tableLoading = false
+      }).catch(() => {
+        this.msgError('查询失败')
+        this.tableLoading = false
+      })
+    },
+    // 查询就诊中的挂号列表数据
+    queryVisitingRegistration() {
+      this.tableLoading = true
+      queryVisitingRegistration(this.schedulingType).then(res => {
+        this.visitingRegistration = res.data
+        this.tableLoading = false
+      }).catch(() => {
+        this.msgError('查询失败')
+        this.tableLoading = false
+      })
+    },
+    // 查询就诊完成的挂号列表数据
+    queryVisitCompletedRegistration() {
+      this.tableLoading = true
+      queryVisitCompletedRegistration(this.schedulingType).then(res => {
+        this.visitCompletedRegistration = res.data
+        this.tableLoading = false
+      }).catch(() => {
+        this.msgError('查询失败')
+        this.tableLoading = false
+      })
+    },
+    // 接诊
+    handleVisit(row) {
+      this.careHistory.regId = row.id
+      const patientId = row.patientId
+      this.loading = true
+      this.openRegistration = false
+      receivePatient(this.careHistory.regId).then(res => {
+        this.loading = false
+        this.msgSuccess('接诊成功')
+        // 根据患者ID查询患者信息、患者档案信息、病历信息
+        getPatientAllMessageByPatientId(patientId).then(res => {
+          this.patientAllObj.patientObj = res.data.patient
+          this.patientAllObj.patientObj.age = this.getAge(res.data.patient.birthday)
+          this.patientAllObj.patientFileObj = res.data.patientFile
+          this.patientAllObj.careHistoryObjList = res.data.careHistoryList
+          this.loading = false
+        }).catch(() => {
+          this.msgError('查询患者信息失败')
+          this.loading = false
+        })
+      }).catch(() => {
+        this.msgError('接诊失败')
+        this.loading = false
+      })
+    },
+    // 载入
+    handleLoading(row) {
+      this.careHistory.regId = row.id
+      const patientId = row.patientId
+      this.openRegistration = false
+      getPatientAllMessageByPatientId(patientId).then(res => {
+        this.patientAllObj.patientObj = res.data.patient
+        this.patientAllObj.patientObj.age = this.getAge(res.data.patient.birthday)
+        this.patientAllObj.patientFileObj = res.data.patientFile
+        this.patientAllObj.careHistoryObjList = res.data.careHistoryList
+        this.loading = false
+      }).catch(() => {
+        this.msgError('载入失败')
+        this.loading = false
+      })
     }
   }
 }
 </script>
 
 <style scoped>
-
+.demo-table-expand {
+  font-size: 0;
+}
+.demo-table-expand label {
+  width: 90px;
+  color: #99a9bf;
+}
+.demo-table-expand .el-form-item {
+  margin-right: 0;
+  margin-bottom: 0;
+  width: 50%;
+}
+.item{
+  font-size: 14px;
+  margin-bottom: 8px;
+}
 </style>
