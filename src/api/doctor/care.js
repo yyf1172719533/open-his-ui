@@ -39,3 +39,28 @@ export function receivePatient(regId) {
     method: 'post'
   })
 }
+
+// 保存病历信息
+export function saveCareHistory(data) {
+  return request({
+    url: '/doctor/care/saveCareHistory',
+    method: 'post',
+    data
+  })
+}
+
+// 根据挂号单ID查询病历信息
+export function getCareHistoryByRegId(regId) {
+  return request({
+    url: '/doctor/care/getCareHistoryByRegId/' + regId,
+    method: 'get'
+  })
+}
+
+// 根据病历ID查询处方以及处方详情信息
+export function queryCareOrdersByChId(careHistoryId) {
+  return request({
+    url: '/doctor/care/queryCareOrdersByChId/' + careHistoryId,
+    method: 'get'
+  })
+}
