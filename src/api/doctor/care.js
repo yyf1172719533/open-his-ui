@@ -64,3 +64,28 @@ export function queryCareOrdersByChId(careHistoryId) {
     method: 'get'
   })
 }
+
+// 保存处方以及处方详情信息
+export function saveCareOrderItem(data) {
+  return request({
+    url: '/doctor/care/saveCareOrderItem',
+    method: 'post',
+    data
+  })
+}
+
+// 根据处方详情ID删除处方详情【只能删除未支付的】
+export function deleteCareOrderItemById(itemId) {
+  return request({
+    url: '/doctor/care/deleteCareOrderItemById/' + itemId,
+    method: 'delete'
+  })
+}
+
+// 完成就诊
+export function visitComplete(regId) {
+  return request({
+    url: '/doctor/care/visitComplete/' + regId,
+    method: 'post'
+  })
+}

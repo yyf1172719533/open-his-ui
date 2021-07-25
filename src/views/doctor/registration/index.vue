@@ -320,7 +320,6 @@ export default {
     getDeptForScheduling() {
       this.loading = true
       listDeptForScheduling(this.queryDeptParams).then(res => {
-        console.log(res.data)
         this.deptTableList = res.data
         this.loading = false
       })
@@ -385,10 +384,8 @@ export default {
               const id = res.data
               this.regId = id
               tx.msgSuccess('挂号成功，挂号单号为【' + id + '】')
-              this.isCharge = false
-              // 清空页面数据
               tx.resetDeptQuery()
-              tx.patientParams = { sex: '2' }
+              this.isCharge = false
             }).catch(() => {
               tx.msgError('挂号失败')
             })
@@ -410,6 +407,9 @@ export default {
         // 挂号单收费
         collectFee(id).then(res => {
           tx.msgSuccess('收费成功')
+          // 清空页面数据
+          tx.resetDeptQuery()
+          tx.patientParams = { sex: '2' }
           tx.getDeptForScheduling()
           this.isCharge = true
         }).catch(() => {

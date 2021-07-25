@@ -24,3 +24,11 @@ export function getPatientFileById(patientId) {
     method: 'get'
   })
 }
+
+// 根据患者ID查询患者所有信息【基础，档案，病例】
+export function getPatientAllMessageByPatientId(patientId) {
+  return request({
+    url: '/doctor/patient/getPatientAllMessageByPatientId/' + patientId,
+    method: 'get'
+  })
+}

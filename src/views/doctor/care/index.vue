@@ -209,8 +209,9 @@
               <span v-else style="color: blue">{{ careHistory.id }}</span>
             </el-col>
             <el-col :span="12" style="text-align: right">
-              <el-button type="primary" :disabled="careHistory.regId === undefined" icon="el-icon-check" @click="handleSaveCareHistory">保存病历</el-button>
-              <el-button type="danger" :disabled="careHistory.regId === undefined" icon="el-icon-finished">完成就诊</el-button>
+              <el-button type="primary" :disabled="careHistory.regId === undefined" v-show="careHistory.id === undefined" icon="el-icon-check" @click="handleSaveCareHistory">保存病历</el-button>
+              <el-button type="primary" :disabled="careHistory.id === undefined" v-show="careHistory.id !== undefined" icon="el-icon-edit" @click="handleSaveCareHistory">修改病历</el-button>
+              <el-button type="danger" :disabled="careHistory.regId === undefined" icon="el-icon-finished" @click="handleCompleteVisit">完成就诊</el-button>
             </el-col>
           </el-row>
         </el-card>
@@ -305,11 +306,11 @@
                   <template slot="title">
                     【{{ item.prescription.prescType === '0' ? '药用处方' : '检查处方' }}】
                     【{{ index + 1 }}】
-                    【 处方总金额 】：￥{{ item.amount }}
+                    【 处方总金额 】：￥{{ item.prescription.amount }}
                   </template>
                   <el-table v-loading="loading" border :data="item.prescriptionItemList">
                     <el-table-column label="序号" align="center" type="index" width="50" />
-                    <el-table-column label="item.prescription.prescType === '0' ? '药用名称' : '项目名称'" align="center" prop="itemName" />
+                    <el-table-column :label="item.prescription.prescType === '0' ? '药用名称' : '项目名称'" align="center" prop="itemName" />
                     <el-table-column label="数量" align="center" prop="num" />
                     <el-table-column label="单价（元）" align="center" prop="singlePrice" />
                     <el-table-column label="金额（元）" align="center" prop="amount" />
@@ -317,7 +318,7 @@
                     <el-table-column label="状态" align="center" prop="status" :formatter="orderStatusFormatter" />
                     <el-table-column label="操作" align="center">
                       <template slot-scope="scope">
-                        <el-button v-show="scope.row.status === '0'" type="text" icon="el-icon-delete" size="mini" @click="handleDeletePrescriptionItem(scope.row)">删除</el-button>
+                        <el-button v-show="scope.row.status === '0'" type="text" icon="el-icon-delete" size="mini" @click="handleDeletePrescriptionItemByItemId(scope.row)">删除</el-button>
                       </template>
                     </el-table-column>
                   </el-table>
@@ -448,19 +449,20 @@
       :close-on-click-modal="false"
       append-to-body
     >
-      <div style="margin: 3px;text-align: center">
+      <div style="margin: 3px;text-align: right">
         【{{ submitPrescription.prescription.prescType === '0' ? '药用' : '检查' }}】
         处方总金额：￥ <span style="color: red">{{ submitPrescription.prescription.amount }}</span>
-        <el-button style="margin-left: 15px" type="success" icon="el-icon-plus" @click="handleSavePrescriptionItem">确定添加</el-button>
+        <el-button style="margin-left: 15px" type="success" icon="el-icon-plus" :disabled="submitPrescription.prescriptionItemList.length === 0" @click="handleSavePrescriptionItem">确定添加</el-button>
       </div>
-      <el-table border :data="submitPrescription.prescriptionItemList">
+      <el-table border :data="submitPrescription.prescriptionItemList" :row-class-name="tableRowClassName">
         <el-table-column label="序号" align="center" type="index" width="50" />
-        <el-table-column label="submitPrescription.prescription.prescType === '0' ? '药用名称' : '项目名称'" align="center" prop="itemName" />
+        <el-table-column :label="submitPrescription.prescription.prescType === '0' ? '药用名称' : '项目名称'" align="center" prop="itemName" />
         <el-table-column label="数量" align="center" prop="num">
           <template slot-scope="scope">
             <el-input-number
               v-model="scope.row.num"
               size="small"
+              @change="handlePrescriptionNumChange(scope.row)"
             />
           </template>
         </el-table-column>
@@ -535,7 +537,7 @@
         />
         <el-form-item>
           <div style="text-align: center">
-            <el-button type="primary" round icon="el-icon-check" size="small">添加并关闭</el-button>
+            <el-button type="primary" round icon="el-icon-check" @click="handleAddPrescription" size="small">添加并关闭</el-button>
           </div>
         </el-form-item>
       </el-form>
@@ -587,7 +589,7 @@
         />
         <el-form-item>
           <div style="text-align: center">
-            <el-button type="primary" round icon="el-icon-check" size="small">添加并关闭</el-button>
+            <el-button type="primary" round icon="el-icon-check" @click="handleAddPrescription" size="small">添加并关闭</el-button>
           </div>
         </el-form-item>
       </el-form>
@@ -598,7 +600,10 @@
 
 <script>
 import { queryToBeSeenRegistration, queryVisitingRegistration, queryVisitCompletedRegistration,
-  receivePatient, getPatientAllMessageByPatientId, saveCareHistory, getCareHistoryByRegId, queryCareOrdersByChId } from '@/api/doctor/care'
+  receivePatient, getPatientAllMessageByPatientId, saveCareHistory, getCareHistoryByRegId, queryCareOrdersByChId,
+  saveCareOrderItem, deleteCareOrderItemById, visitComplete } from '@/api/doctor/care'
+import { listCheckItemForPage } from '@/api/system/checkItem'
+import { listMedicinesForPage } from '@/api/erp/medicine'
 
 export default {
   data() {
@@ -654,7 +659,7 @@ export default {
       // 发病日期
       caseDateObj: new Date(),
       // 处方以及处方详情数据
-      prescriptionList: {},
+      prescriptionList: [],
       // 对话框标题
       title: '',
       // 是否打开添加药品或检查项对话框
@@ -675,6 +680,8 @@ export default {
       tableList: [],
       // 抽屉总条数
       total: 0,
+      // 抽屉里选中的数据
+      selectItemList: [],
       // 处方以及处方详情
       submitPrescription: {
         prescription: {
@@ -887,8 +894,6 @@ export default {
         this.msgError('保存病历失败')
       })
     },
-    // 删除处方详情
-    handleDeletePrescriptionItem(row) {},
     // 打开添加药用处方的对话框
     handleAddMedicinePrescription() {
       if (!this.careHistory.regId) {
@@ -902,6 +907,7 @@ export default {
       this.submitPrescription.prescription.prescType = '0'
       this.title = '添加【药用】处方'
       this.openAddPrescriptionItem = true
+      this.submitPrescription.prescriptionItemList = []
     },
     // 打开添加检查处方的对话框
     handleAddCheckPrescription() {
@@ -916,15 +922,275 @@ export default {
       this.submitPrescription.prescription.prescType = '1'
       this.title = '添加【检查】处方'
       this.openAddPrescriptionItem = true
+      this.submitPrescription.prescriptionItemList = []
     },
     // 打开药品或检查项的抽屉
     handleOpenAddPrescriptionItemDrawer() {
       if (this.submitPrescription.prescription.prescType === '0') {
         // 打开药品列表抽屉
         this.openMedicinesDrawer = true
+        this.handleReset()
+        this.getMedicinesList()
       } else {
         // 打开检查项抽屉
         this.openCheckItemDrawer = true
+        this.handleReset()
+        this.getCheckItemList()
+      }
+    },
+    // 加载药品数据
+    getMedicinesList() {
+      this.tableList = []
+      this.drawerLoading = true
+      listMedicinesForPage(this.queryFormParams).then(res => {
+        this.tableList = res.data
+        this.total = res.total
+        this.drawerLoading = false
+      }).catch(() => {
+        this.drawerLoading = false
+        this.msgError('加载药品数据失败')
+      })
+    },
+    // 药品抽屉数据表格多选择框选择时触发
+    handleMedicinesSelectionChange(selection) {
+      this.selectItemList = selection
+    },
+    // 药品抽屉分页pageSize时触发
+    handleMedicineSizeChange(val) {
+      this.queryFormParams.pageSize = val
+      this.getMedicinesList()
+    },
+    // 药品抽屉分页点击上一页 下一页时触发
+    handleMedicineCurrentChange(val) {
+      this.queryFormParams.pageNum = val
+      this.getMedicinesList()
+    },
+    // 药品抽屉查询
+    handleMedicinesQuery() {
+      this.queryFormParams.pageNum = 1
+      this.getMedicinesList()
+    },
+    // 加载检查项目数据
+    getCheckItemList() {
+      this.tableList = []
+      this.drawerLoading = true
+      listCheckItemForPage(this.queryFormParams).then(res => {
+        this.tableList = res.data
+        this.total = res.total
+        this.drawerLoading = false
+      }).catch(() => {
+        this.drawerLoading = false
+        this.msgError('加载检查项目数据失败')
+      })
+    },
+    // 检查项抽屉数据表格多选择框选择时触发
+    handleCheckItemSelectionChange(selection) {
+      this.selectItemList = selection
+    },
+    // 检查项抽屉分页pageSize时触发
+    handleCheckItemSizeChange(val) {
+      this.queryFormParams.pageSize = val
+      this.getCheckItemList()
+    },
+    // 检查项抽屉分页点击上一页 下一页时触发
+    handleCheckItemCurrentChange(val) {
+      this.queryFormParams.pageNum = val
+      this.getCheckItemList()
+    },
+    // 检查项抽屉查询
+    handleCheckItemQuery() {
+      this.queryFormParams.pageNum = 1
+      this.getCheckItemList()
+    },
+    // 重置
+    handleReset() {
+      this.queryFormParams = {
+        pageNum: 1,
+        pageSize: 10,
+        keywords: undefined
+      }
+      if (this.submitPrescription.prescription.prescType === '0') {
+        this.getMedicinesList()
+      } else {
+        this.getCheckItemList()
+      }
+    },
+    // 药品或检查项抽屉添加数据
+    handleAddPrescription() {
+      const prescType = this.submitPrescription.prescription.prescType
+      if (this.selectItemList.length === 0) {
+        this.$message({
+          message: '请选择【' + (prescType === '0' ? '药品' : '检查项') + '】数据',
+          type: 'warning'
+        })
+        return
+      }
+      // 药品
+      if (prescType === '0') {
+        this.selectItemList.filter(item => {
+          const obj = {
+            itemId: item.id,
+            itemName: item.medicineName,
+            itemType: prescType,
+            num: 1,
+            singlePrice: item.medicinePrice,
+            amount: 1 * item.medicinePrice,
+            remark: '请按说明服用'
+          }
+          let flag = false // 默认没有选择
+          this.submitPrescription.prescriptionItemList.filter(a => {
+            if (a.itemId === obj.itemId) {
+              a.num = a.num + 1
+              flag = true
+            }
+          })
+          if (!flag) {
+            this.submitPrescription.prescriptionItemList.push(obj)
+          }
+          this.openMedicinesDrawer = false
+        })
+      } else {
+        // 检查项目
+        this.selectItemList.filter(item => {
+          const obj = {
+            itemId: item.id,
+            itemName: item.itemName,
+            itemType: prescType,
+            num: 1,
+            singlePrice: item.unitPrice,
+            amount: 1 * item.unitPrice,
+            remark: '请按要求检查'
+          }
+          let flag = false // 默认没有选择
+          this.submitPrescription.prescriptionItemList.filter(a => {
+            if (a.itemId === obj.itemId) {
+              a.num = a.num + 1
+              flag = true
+            }
+          })
+          if (!flag) {
+            this.submitPrescription.prescriptionItemList.push(obj)
+          }
+          this.openCheckItemDrawer = false
+        })
+      }
+      // 计算总金额
+      this.calculateAllAmount()
+    },
+    // 对话框中表格数据加上index
+    tableRowClassName({ row, rowIndex }) {
+      row.index = rowIndex
+    },
+    // 删除处方详情
+    handleDeletePrescriptionItem(row) {
+      this.submitPrescription.prescriptionItemList.splice(row.index, 1)
+      this.calculateAllAmount()
+    },
+    // 计算处方详情总金额
+    calculateAllAmount() {
+      this.submitPrescription.prescription.amount = 0.00
+      this.submitPrescription.prescriptionItemList.filter(item => {
+        this.submitPrescription.prescription.amount += (item.num * item.singlePrice)
+      })
+    },
+    // 监听药品或检查项弹出对话框中选中数量的变化
+    handlePrescriptionNumChange(row) {
+      row.amount = row.num * row.singlePrice
+      this.calculateAllAmount()
+    },
+    // 保存处方相关信息
+    handleSavePrescriptionItem() {
+      if (this.submitPrescription.prescriptionItemList.length === 0) {
+        this.$message({
+          message: '请添加处方详情',
+          type: 'warning'
+        })
+        return
+      }
+      this.submitPrescription.prescription.patientId = this.careHistory.patientId
+      this.submitPrescription.prescription.patientName = this.careHistory.patientName
+      this.submitPrescription.prescription.careHistoryId = this.careHistory.id
+      console.log(this.submitPrescription)
+      this.loading = true
+      saveCareOrderItem(this.submitPrescription).then(res => {
+        // 关闭当前弹出层
+        this.openAddPrescriptionItem = false
+        this.loading = false
+        this.msgSuccess('保存成功')
+        // 刷新处方列表
+        this.getCareOrdersByChId(this.careHistory.id)
+      }).catch(() => {
+        this.msgError('保存失败')
+        this.loading = false
+      })
+    },
+    // 根据处方详情ID删除处方详情信息
+    handleDeletePrescriptionItemByItemId(row) {
+      const id = row.id
+      const itemName = row.itemName
+      const tx = this
+      tx.$confirm('是否删除【' + itemName + '】这条处方详情', '提示', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning'
+      }).then(() => {
+        deleteCareOrderItemById(id).then(res => {
+          this.msgSuccess('删除成功')
+          // 刷新处方列表
+          this.getCareOrdersByChId(this.careHistory.id)
+        }).catch(() => {
+          this.msgError('删除失败')
+        })
+      })
+    },
+    // 完成就诊
+    handleCompleteVisit() {
+      const regId = this.careHistory.regId
+      const patientName = this.careHistory.patientName
+      const tx = this
+      tx.$confirm('是否完成【' + patientName + '】的就诊', '提示', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning'
+      }).then(() => {
+        visitComplete(regId).then(res => {
+          this.msgSuccess('操作成功')
+          // 重置所有数据
+          this.resetAllData()
+        }).catch(() => {
+          this.msgError('操作失败')
+        })
+      })
+    },
+    // 重置所有数据
+    resetAllData() {
+      this.patientAllObj = {
+        patientObj: {},
+        patientFileObj: {},
+        careHistoryObjList: []
+      }
+      this.careHistory = {
+        regId: undefined,
+        id: undefined,
+        caseDate: undefined,
+        receiveType: '0',
+        isContagious: '0',
+        caseTitle: undefined,
+        caseResult: undefined,
+        doctorTips: undefined,
+        remark: undefined,
+        patientId: undefined,
+        patientName: undefined
+      }
+      this.prescriptionList = []
+      this.submitPrescription = {
+        prescription: {
+          amount: 0.00,
+          patientId: undefined,
+          patientName: undefined,
+          prescType: '0'
+        },
+        prescriptionItemList: []
       }
     }
   }

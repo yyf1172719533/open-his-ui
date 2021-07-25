@@ -42,8 +42,7 @@
         <el-button type="primary" round icon="el-icon-plus" size="mini" :disabled="single" @click="handleViewFile">查看档案</el-button>
       </el-col>
       <el-col :span="1.5">
-        <el-button type="success" round icon="el-icon-edit" size="mini" :disabled="single" @click="handleViewCareHistory">查看就诊病历
-        </el-button>
+        <el-button type="success" round icon="el-icon-edit" size="mini" :disabled="single" @click="handleViewCareHistory">查看就诊病历</el-button>
       </el-col>
     </el-row>
     <!-- 表格工具按钮结束 -->
@@ -175,11 +174,93 @@
       </span>
     </el-dialog>
     <!-- 查看患者档案对话框结束 -->
+
+    <!-- 查看患者病历对话框开始 -->
+    <el-dialog
+      :title="title"
+      :visible.sync="careHistoryOpen"
+      width="1000px"
+      center
+      append-to-body
+    >
+      <el-form label-position="left" label-width="120px" inline class="demo-table-expand">
+        <el-card>
+          <el-form-item label="ID:">
+            <span v-text="patientObj.id" />
+          </el-form-item>
+          <el-form-item label="姓名:">
+            <span v-text="patientObj.name" />
+          </el-form-item>
+          <el-form-item label="身份证号:">
+            <span v-text="patientObj.cardNumber" />
+          </el-form-item>
+          <el-form-item label="电话:">
+            <span v-text="patientObj.phone" />
+          </el-form-item>
+        </el-card>
+      </el-form>
+      <el-card style="margin-top:3px">
+        <div v-if="allPatientMsg.length>0">
+          <el-collapse accordion>
+            <el-collapse-item
+              v-for="(item,index) in allPatientMsg"
+              :key="index"
+              :name="index"
+            >
+              <template slot="title">
+                科室：【{{ item.deptName }}】   就诊时间：【{{ item.visitDate }}】
+              </template>
+              <div class="item">
+                主诉：{{ item.caseTitle }}
+              </div>
+              <div class="item">
+                诊断信息：{{ item.caseResult }}
+              </div>
+              <div class="item">
+                医生建议：{{ item.doctorTips }}
+              </div>
+              <div class="item">
+                备注：{{ item.remark }}
+              </div>
+              <!--当前挂号单历史处方开始-->
+              <el-collapse v-show="item.careOrders.length > 0" accordion>
+                <el-collapse-item v-for="(it,i) in item.careOrders" :key="i">
+                  <template slot="title">
+                    【 {{ it.prescType === '0' ? '药品处方' : '检查处方' }}】【{{ i + 1 }}】 <span>【处方总额】:￥{{ it.amount }}</span>
+                  </template>
+                  <el-table
+                    v-loading="loading"
+                    border
+                    :data="it.careOrderItems"
+                  >
+                    <el-table-column label="序号" align="center" type="index" width="50" />
+                    <el-table-column :label="it.prescType === '0' ? '药品名称' : '项目名称'" align="center" prop="itemName" />
+                    <el-table-column label="数量" align="center" prop="num" />
+                    <el-table-column label="单价(元)" align="center" prop="singlePrice" />
+                    <el-table-column label="金额(元)" align="center" prop="amount" />
+                    <el-table-column label="备注" prop="remark" align="center" />
+                    <el-table-column label="状态" prop="status" align="center" :formatter="statusFormatter" />
+                  </el-table>
+                </el-collapse-item>
+              </el-collapse>
+            </el-collapse-item>
+          </el-collapse>
+        </div>
+        <div v-else style="text-align:center">
+          暂无就诊数据
+        </div>
+      </el-card>
+      <span slot="footer" class="dialog-footer">
+        <el-button @click="cancelHistory">取 消</el-button>
+      </span>
+    </el-dialog>
+
+    <!-- 查看患者病历对话框结束 -->
   </div>
 </template>
 
 <script>
-import { listPatientForPage, getPatientById, getPatientFileById } from '@/api/doctor/patient'
+import { listPatientForPage, getPatientById, getPatientFileById, getPatientAllMessageByPatientId } from '@/api/doctor/patient'
 
 export default {
   data() {
@@ -202,6 +283,8 @@ export default {
       title: '',
       // 是否显示对话框
       fileOpen: false,
+      // 患者病历对话框
+      careHistoryOpen: false,
       // 查询参数
       queryParams: {
         pageNum: 1,
@@ -213,7 +296,11 @@ export default {
       // 患者信息
       patientObj: {},
       // 患者档案信息
-      patientFileObj: {}
+      patientFileObj: {},
+      // 患者所有就诊信息
+      allPatientMsg: [],
+      // 处方详情支付状态
+      statusOptions: []
     }
   },
   created() {
@@ -225,6 +312,10 @@ export default {
     // 加载信息完善状态
     this.getDictDataByType('his_patient_msg_final').then(res => {
       this.patientMsgOptions = res.data
+    })
+    // 加载处方详情支付状态
+    this.getDictDataByType('his_order_details_status').then(res => {
+      this.statusOptions = res.data
     })
   },
   methods: {
@@ -272,6 +363,10 @@ export default {
     msgFormatter(row) {
       return this.selectDictLabel(this.patientMsgOptions, row.isFinal)
     },
+    // 处方详情支付状态转换
+    statusFormatter(row) {
+      return this.selectDictLabel(this.statusOptions, row.status)
+    },
     // 查看患者档案
     handleViewFile() {
       const patientId = this.ids[0]
@@ -294,9 +389,32 @@ export default {
         }
       })
     },
+    // 查看患者病历信息
+    handleViewCareHistory() {
+      this.careHistoryOpen = true
+      this.title = '查看患者病历信息'
+      const patientId = this.ids[0]
+      this.patientFileObj = {}
+      this.patientObj = {}
+      this.allPatientMsg = []
+      // 查询患者信息
+      getPatientById(patientId).then(res => {
+        this.patientObj = res.data
+      })
+      // 查询病历信息
+      getPatientAllMessageByPatientId(patientId).then(res => {
+        this.allPatientMsg = res.data
+      }).catch(() => {
+        this.msgError('查询失败')
+      })
+    },
     // 取消
     cancelFile() {
       this.fileOpen = false
+      this.title = ''
+    },
+    cancelHistory() {
+      this.careHistoryOpen = false
       this.title = ''
     }
   }
@@ -316,4 +434,8 @@ export default {
     margin-bottom: 0;
     width: 50%;
    }
+.item{
+  font-size: 14px;
+  margin-bottom: 8px;
+}
 </style>

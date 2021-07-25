@@ -444,7 +444,6 @@ export default {
         })
         // 如果没有则放入purchaseItemList中
         if (!flag) {
-          // TODO
           this.purchaseItemList.push(JSON.parse(JSON.stringify(i)))
         }
       })
