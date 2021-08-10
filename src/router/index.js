@@ -263,7 +263,7 @@ export const asyncRoutes = [
     children: [
       {
         path: 'charge',
-        component: () => import('@/views/error-page/404'),
+        component: () => import('@/views/doctor/charge/charge'),
         name: '/charge/docharge',
         meta: { title: '处方收费', icon: 'list' }
       },
