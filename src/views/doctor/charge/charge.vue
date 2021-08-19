@@ -95,13 +95,34 @@
         请输入正确的挂号单ID查询
       </el-card>
     </div>
+
+    <!-- 支付宝二维码弹框开始 -->
+    <el-dialog
+      width="400px"
+      :visible.sync="openPay"
+      center
+      :close-on-click-modal="false"
+      :before-close="handleClose"
+      append-to-body
+    >
+      <div style="text-align: center">
+        <vue-qr :text="payObj.qrCode" :logo-src="downloadData.icon + '?cache'" :logo-scale="0.2" :size="200" />
+        <div>请使用支付宝扫码支付</div>
+        <div style="color: #dd1100;font-size: large;font-weight: bold;margin-top: 10px">￥ {{ payObj.allAmount }}</div>
+      </div>
+    </el-dialog>
+    <!-- 支付宝二维码弹框结束 -->
   </div>
 </template>
 
 <script>
-import { getNoChargeCareHistoryByRegId, createOrderChargeWithCash } from '@/api/doctor/charge'
+import { getNoChargeCareHistoryByRegId, createOrderChargeWithCash, createOrderChargeWithZfb, queryOrderChargeOrderId } from '@/api/doctor/charge'
+import vueQr from 'vue-qr'
 
 export default {
+  components: {
+    vueQr
+  },
   data() {
     return {
       // 遮罩层
@@ -121,7 +142,18 @@ export default {
       // 处方详情状态数据
       statusOptions: [],
       // 当前选中的所有数据集合
-      itemObjs: []
+      itemObjs: [],
+      // 支付对象
+      payObj: {},
+      // 二维码弹出层
+      openPay: false,
+      // 定时轮询对象
+      intervalObj: undefined,
+      // 二维码中间图片
+      downloadData: {
+        url: 'http://pic.yupoo.com/yyf1172719533/72fe337b/867a52d4.jpeg',
+        icon: 'http://pic.yupoo.com/yyf1172719533/72fe337b/867a52d4.jpeg'
+      }
     }
   },
   created() {
@@ -269,7 +301,84 @@ export default {
       })
     },
     // 支付宝支付
-    handlePayZfb() {}
+    handlePayZfb() {
+      if (!this.careHistory.regId) {
+        this.$message({
+          message: '请输入挂号单ID',
+          type: 'warning'
+        })
+        return
+      } else if (this.itemObjs.length === 0) {
+        this.$message({
+          message: '请选择要支付的处方详情',
+          type: 'warning'
+        })
+        return
+      }
+      const postObj = {
+        orderChargeDto: {
+          orderAmount: this.allAmount,
+          careHistoryId: this.careHistory.id,
+          regId: this.careHistory.regId,
+          patientName: this.careHistory.patientName
+        },
+        orderChargeItemDtoList: []
+      }
+      this.itemObjs.filter(item => {
+        const obj = {
+          itemId: item.id,
+          prescId: item.prescId,
+          itemName: item.itemName,
+          itemPrice: item.singlePrice,
+          itemNum: item.num,
+          itemType: item.itemType,
+          itemAmount: item.amount
+        }
+        postObj.orderChargeItemDtoList.push(obj)
+      })
+      this.$confirm('是否确定使用支付宝支付？', '提示', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning'
+      }).then(() => {
+        createOrderChargeWithZfb(postObj).then(res => {
+          this.payObj = res.data
+          const tx = this
+          // 打开二维码弹出层
+          tx.openPay = true
+          // 定时轮询  查询是否支付成功
+          tx.intervalObj = setInterval(function() {
+            // 根据订单ID查询订单信息
+            queryOrderChargeOrderId(tx.payObj.orderId).then(r => {
+              if (r.data.orderStatus === '1') {
+                // 扫码支付成功
+                // 清除定时器
+                clearInterval(tx.intervalObj)
+                tx.msgSuccess('扫码支付成功')
+                tx.openPay = false
+                tx.handleReset()
+              }
+            }).catch(() => {
+              // 清除定时器
+              clearInterval(tx.intervalObj)
+            })
+          }, 2000)
+          this.loading = false
+          this.loadingText = ''
+        }).catch(() => {
+          this.msgError('支付失败')
+          this.loading = false
+          this.loadingText = ''
+        })
+      })
+    },
+    // 弹出层关闭
+    handleClose() {
+      this.loading = false
+      this.loadingText = ''
+      this.openPay = false
+      clearInterval(this.intervalObj)
+    }
   }
 }
 </script>
