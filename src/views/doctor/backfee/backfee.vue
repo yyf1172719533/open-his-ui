@@ -55,13 +55,13 @@
       <el-card style="margin-bottom: 5px">
         <el-button type="primary" icon="el-icon-check" @click="handleSelectAll">全选</el-button>
         <el-button type="success" icon="el-icon-close" @click="handleUnSelectAll">取消全选</el-button>
-        <el-button type="warning" icon="el-icon-money" @click="handlePayCash">现金支付</el-button>
-        <el-button type="danger" icon="el-icon-bank-card" @click="handlePayZfb">支付宝支付</el-button>
+        <el-button type="warning" icon="el-icon-money" @click="handleBackfeeWithCash">现金退款</el-button>
+        <el-button type="danger" icon="el-icon-bank-card" @click="handleBackfeeWithZfb">支付宝退款</el-button>
         <span style="margin-left: 20px">订单总额：<span style="color: red">￥{{ allAmount }}</span></span>
       </el-card>
       <!-- 工具栏按钮结束 -->
 
-      <!-- 未支付的处方详情开始 -->
+      <!-- 已支付的处方详情开始 -->
       <el-card style="margin-bottom: 5px">
         <el-collapse v-if="careOrders.length > 0" v-model="activeNames">
           <el-collapse-item v-for="(item, index) in careOrders" :key="index" :name="index">
@@ -96,41 +96,20 @@
           </el-collapse-item>
         </el-collapse>
       </el-card>
-      <!-- 未支付的处方详情结束 -->
+      <!-- 已支付的处方详情结束 -->
     </div>
     <div v-else style="text-align: center">
       <el-card>
         请输入正确的挂号单ID查询
       </el-card>
     </div>
-
-    <!-- 支付宝二维码弹框开始 -->
-    <el-dialog
-      width="400px"
-      :visible.sync="openPay"
-      center
-      :close-on-click-modal="false"
-      :before-close="handleClose"
-      append-to-body
-    >
-      <div style="text-align: center">
-        <vue-qr :text="payObj.qrCode" :logo-src="downloadData.icon + '?cache'" :logo-scale="0.2" :size="200" />
-        <div>请使用支付宝扫码支付</div>
-        <div style="color: #dd1100;font-size: large;font-weight: bold;margin-top: 10px">￥ {{ payObj.allAmount }}</div>
-      </div>
-    </el-dialog>
-    <!-- 支付宝二维码弹框结束 -->
   </div>
 </template>
 
 <script>
-import { getNoChargeCareHistoryByRegId, createOrderChargeWithCash, createOrderChargeWithZfb, queryOrderChargeOrderId } from '@/api/doctor/charge'
-import vueQr from 'vue-qr'
+import { getChargedCareHistoryByRegId, createOrderBackfeeWithCash, createOrderBackfeeWithZfb } from '@/api/doctor/backfee'
 
 export default {
-  components: {
-    vueQr
-  },
   filters: {
     // 保留两位小数
     rounding(value) {
@@ -156,18 +135,7 @@ export default {
       // 处方详情状态数据
       statusOptions: [],
       // 当前选中的所有数据集合
-      itemObjs: [],
-      // 支付对象
-      payObj: {},
-      // 二维码弹出层
-      openPay: false,
-      // 定时轮询对象
-      intervalObj: undefined,
-      // 二维码中间图片
-      downloadData: {
-        url: 'http://pic.yupoo.com/yyf1172719533/72fe337b/867a52d4.jpeg',
-        icon: 'http://pic.yupoo.com/yyf1172719533/72fe337b/867a52d4.jpeg'
-      }
+      itemObjs: []
     }
   },
   created() {
@@ -192,7 +160,7 @@ export default {
       this.allAmount = 0.0
       this.loading = true
       this.loadingText = '数据加载中，请稍候...'
-      getNoChargeCareHistoryByRegId(this.regId).then(res => {
+      getChargedCareHistoryByRegId(this.regId).then(res => {
         this.careHistory = res.data.careHistory
         this.careOrders = res.data.careOrders
         this.loading = false
@@ -260,8 +228,8 @@ export default {
         e.clearSelection()
       })
     },
-    // 现金支付
-    handlePayCash() {
+    // 现金退款
+    handleBackfeeWithCash() {
       if (!this.careHistory.regId) {
         this.$message({
           message: '请输入挂号单ID',
@@ -270,19 +238,19 @@ export default {
         return
       } else if (this.itemObjs.length === 0) {
         this.$message({
-          message: '请选择要支付的处方详情',
+          message: '请选择要退款的处方详情',
           type: 'warning'
         })
         return
       }
       const postObj = {
-        orderChargeDto: {
-          orderAmount: this.allAmount,
+        orderBackfeeDto: {
+          backAmount: this.allAmount,
           careHistoryId: this.careHistory.id,
           regId: this.careHistory.regId,
           patientName: this.careHistory.patientName
         },
-        orderChargeItemDtoList: []
+        orderBackfeeItemDtoList: []
       }
       this.itemObjs.filter(item => {
         const obj = {
@@ -294,29 +262,29 @@ export default {
           itemType: item.itemType,
           itemAmount: item.amount
         }
-        postObj.orderChargeItemDtoList.push(obj)
+        postObj.orderBackfeeItemDtoList.push(obj)
       })
-      this.$confirm('是否确定使用现金支付？', '提示', {
+      this.$confirm('是否确定使用现金退款吗？', '提示', {
         confirmButtonText: '确定',
         cancelButtonText: '取消',
         type: 'warning'
       }).then(() => {
         this.loading = true
-        this.loadingText = '现金支付中...'
-        createOrderChargeWithCash(postObj).then(res => {
-          this.msgSuccess('支付成功')
+        this.loadingText = '现金退款中...'
+        createOrderBackfeeWithCash(postObj).then(res => {
+          this.msgSuccess('退款成功')
           this.handleQuery()
           this.loading = false
           this.loadingText = ''
         }).catch(() => {
-          this.msgError('支付失败')
+          this.msgError('退款失败')
           this.loading = false
           this.loadingText = ''
         })
       })
     },
-    // 支付宝支付
-    handlePayZfb() {
+    // 支付宝退款
+    handleBackfeeWithZfb() {
       if (!this.careHistory.regId) {
         this.$message({
           message: '请输入挂号单ID',
@@ -325,19 +293,19 @@ export default {
         return
       } else if (this.itemObjs.length === 0) {
         this.$message({
-          message: '请选择要支付的处方详情',
+          message: '请选择要退款的处方详情',
           type: 'warning'
         })
         return
       }
       const postObj = {
-        orderChargeDto: {
-          orderAmount: this.allAmount,
+        orderBackfeeDto: {
+          backAmount: this.allAmount,
           careHistoryId: this.careHistory.id,
           regId: this.careHistory.regId,
           patientName: this.careHistory.patientName
         },
-        orderChargeItemDtoList: []
+        orderBackfeeItemDtoList: []
       }
       this.itemObjs.filter(item => {
         const obj = {
@@ -349,46 +317,22 @@ export default {
           itemType: item.itemType,
           itemAmount: item.amount
         }
-        postObj.orderChargeItemDtoList.push(obj)
+        postObj.orderBackfeeItemDtoList.push(obj)
       })
-      this.$confirm('是否确定使用支付宝支付？', '提示', {
+      this.$confirm('是否确定使用支付宝退款吗？', '提示', {
         confirmButtonText: '确定',
         cancelButtonText: '取消',
         type: 'warning'
       }).then(() => {
-        createOrderChargeWithZfb(postObj).then(res => {
-          this.payObj = res.data
-          const tx = this
-          // 打开二维码弹出层
-          tx.openPay = true
-          // 定时轮询  查询是否支付成功
-          tx.intervalObj = setInterval(function() {
-            // 根据订单ID查询订单信息
-            queryOrderChargeOrderId(tx.payObj.orderId).then(r => {
-              if (r.data.orderStatus === '1') {
-                // 扫码支付成功
-                // 清除定时器
-                clearInterval(tx.intervalObj)
-                tx.msgSuccess('扫码支付成功')
-                tx.openPay = false
-                tx.handleQuery()
-              }
-            }).catch(() => {
-              // 清除定时器
-              clearInterval(tx.intervalObj)
-            })
-          }, 2000)
+        createOrderBackfeeWithZfb(postObj).then(res => {
+          this.msgSuccess('退款成功')
+          this.handleQuery()
+          this.loading = false
         }).catch(() => {
-          this.msgError('支付失败')
+          this.msgError('退款失败')
+          this.loading = false
         })
       })
-    },
-    // 弹出层关闭
-    handleClose() {
-      this.loading = false
-      this.loadingText = ''
-      this.openPay = false
-      clearInterval(this.intervalObj)
     }
   }
 }

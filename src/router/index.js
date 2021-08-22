@@ -269,19 +269,19 @@ export const asyncRoutes = [
       },
       {
         path: 'chargelist',
-        component: () => import('@/views/error-page/404'),
+        component: () => import('@/views/doctor/charge/chargeList'),
         name: '/charge/chargelist',
         meta: { title: '收费查询', icon: 'list' }
       },
       {
         path: 'backfee',
-        component: () => import('@/views/error-page/404'),
+        component: () => import('@/views/doctor/backfee/backfee'),
         name: '/charge/backfee',
         meta: { title: '处方退费', icon: 'list' }
       },
       {
         path: 'backfeelist',
-        component: () => import('@/views/error-page/404'),
+        component: () => import('@/views/doctor/backfee/backfeeList'),
         name: '/charge/backfeelist',
         meta: { title: '退费查询', icon: 'list' }
       },
