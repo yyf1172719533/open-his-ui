@@ -287,7 +287,7 @@ export const asyncRoutes = [
       },
       {
         path: 'dispensing',
-        component: () => import('@/views/error-page/404'),
+        component: () => import('@/views/doctor/handleMedicine/index'),
         name: '/charge/dispensing',
         meta: { title: '处方发药', icon: 'list' }
       }
