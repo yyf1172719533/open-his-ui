@@ -305,19 +305,19 @@ export const asyncRoutes = [
     children: [
       {
         path: 'docheck',
-        component: () => import('@/views/error-page/404'),
+        component: () => import('@/views/doctor/checkResult/newCheck'),
         name: '/check/docheck',
         meta: { title: '新开检查', icon: 'list' }
       },
       {
         path: 'checkresult',
-        component: () => import('@/views/error-page/404'),
+        component: () => import('@/views/doctor/checkResult/uploadCheckResult'),
         name: '/check/checkresult',
         meta: { title: '检查结果录入', icon: 'list' }
       },
       {
         path: 'checklist',
-        component: () => import('@/views/error-page/404'),
+        component: () => import('@/views/doctor/checkResult/checkResultList'),
         name: '/check/checklist',
         meta: { title: '检查结果查询', icon: 'list' }
       }
