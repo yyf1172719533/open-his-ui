@@ -178,7 +178,7 @@ export const asyncRoutes = [
     children: [
       {
         path: 'revenue',
-        component: () => import('@/views/error-page/404'),
+        component: () => import('@/views/statistics/revenue/index'),
         name: '/statistics/revenue',
         meta: { title: '收支统计', icon: 'edit' }
       },
