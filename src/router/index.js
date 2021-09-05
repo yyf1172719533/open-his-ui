@@ -184,20 +184,20 @@ export const asyncRoutes = [
       },
       {
         path: 'sales',
-        component: () => import('@/views/error-page/404'),
+        component: () => import('@/views/statistics/drug/index'),
         name: '/statistics/sales',
         meta: { title: '药品销售统计', icon: 'list' },
         hidden: true
       },
       {
         path: 'check',
-        component: () => import('@/views/error-page/404'),
+        component: () => import('@/views/statistics/check/index'),
         name: '/statistics/check',
         meta: { title: '检查项目统计', icon: 'list' }
       },
       {
         path: 'workload',
-        component: () => import('@/views/error-page/404'),
+        component: () => import('@/views/statistics/work/index'),
         name: '/statistics/workload',
         meta: { title: '工作量统计', icon: 'list' }
       }
